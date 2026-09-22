@@ -404,3 +404,81 @@ Stage Summary:
   3. Replace placeholder business details in `src/lib/business-info.ts` with Rick's real info.
   4. Add pagination to the admin dashboard (currently shows last 50 leads).
   5. Add a 4th design variant if the client wants more options.
+
+---
+Task ID: 7
+Agent: webDevReview (cron round 4)
+Task: Scheduled webDevReview pass #4 — QA the live site, then add admin authentication, lead management (view/delete/mark-contacted), 7-day leads chart, and logout.
+
+Work Log:
+- Read worklog.md (rounds 0–6). Round 6 left the project stable with: admin dashboard, OG image generation, estimator→lead wiring, keyboard help dialog. Recommended next-phase priorities were: (1) admin auth, (2) email notifications, (3) real business info, (4) pagination, (5) 4th design variant.
+- QA via agent-browser: console clean, all 3 designs switch, service estimator opens, lead form works, design notes drawer works, admin dashboard loads. No bugs found — project was stable.
+- Selected focus for this round: admin authentication + lead management workflow (the highest-impact gap — the admin dashboard was open to anyone and couldn't delete spam/test leads or mark leads as contacted).
+
+NEW FEATURES:
+1. **Admin authentication** (password-gated admin area):
+   - Created `src/lib/admin-auth.ts` — simple HMAC-cookie auth. Password from `ADMIN_PASSWORD` env var (default `rr-admin-2024` for mockup). Cookie `rr_admin` contains an HMAC of the password, set HttpOnly + SameSite=Lax + 7-day maxAge. Uses `timingSafeEqual` for cookie verification. Includes both a route-handler variant (`verifyAdminAuth(req)`) and a server-component variant (`verifyAdminAuthFromCookies()`).
+   - Created `/api/admin/auth/login` (POST — validates password, sets cookie), `/api/admin/auth/logout` (POST — clears cookie), `/api/admin/auth/status` (GET — returns `{ authed }`).
+   - Created `/admin/login` page — polished login form with brand badge, password input with show/hide toggle, error display, mockup-password hint, loading state. On success → redirect to `/admin/leads`.
+   - Converted `/admin/leads` to a server component that checks auth via `verifyAdminAuthFromCookies()` and redirects to `/admin/login` if not authed. Moved the original client component to `/admin/leads/dashboard.tsx` (renamed export to `AdminLeadsDashboard`).
+   - Updated `GET /api/leads` to require admin auth (returns 401 if not authed). The dashboard client handles 401 by redirecting to `/admin/login`.
+   - Verified: navigating to `/admin/leads` while logged out → redirects to `/admin/login`. Login with `rr-admin-2024` → redirects to `/admin/leads` and data loads.
+2. **Lead management workflow** (view / delete / mark contacted):
+   - Added `contacted Boolean @default(false)`, `contactedAt DateTime?`, `adminNote String?`, `updatedAt DateTime @updatedAt` to the `Lead` Prisma model. Force-reset the DB (test data only).
+   - Created `/api/leads/[id]` route: `PATCH` (update `contacted` and/or `adminNote`, requires admin auth) + `DELETE` (permanently delete, requires admin auth).
+   - Updated the admin dashboard with:
+     - **Lead detail dialog** — clicking any table row opens a Dialog showing: name + contacted badge, submission date, phone/email (clickable), service/design/estimate grid, full message, admin note textarea + "Save note" button, action buttons (Delete, Mark contacted/uncontacted, Save note).
+     - **Contacted toggle** — each row has a CheckCircle2 button to toggle contacted state (optimistic update + API PATCH). Contacted leads show a green checkmark next to the name.
+     - **Delete** — each row has a Trash2 button that opens a delete-confirmation dialog ("Delete this lead? This permanently removes the lead...") with Cancel / Delete lead buttons. On confirm, removes optimistically + calls DELETE API.
+     - **Admin note** — the detail dialog has a textarea where Rick can type internal notes (e.g. "Left voicemail, trying again Tuesday") that persist to the `Lead.adminNote` column.
+     - **Sign out button** — in the header, calls `/api/admin/auth/logout` and redirects to `/admin/login`.
+3. **Admin stats: Contacted count + 7-day mini bar chart**:
+   - Added a 5th stats card: "Contacted" showing `X of Y` with a CheckCircle2 icon (green if >0, gray if 0).
+   - Below the count, a 7-day mini bar chart showing leads per day (Mon–Sun initials). Bars are amber if there were leads that day, light gray if none. Each bar has a tooltip with the exact count. Computed from `stats.days` (last 7 days, derived in useMemo).
+   - Updated the Lead type in the dashboard to include `contacted`, `contactedAt`, `adminNote`.
+
+VERIFICATION:
+- `bun run lint` — clean (0 errors, 0 warnings).
+- agent-browser QA: 
+  - `/admin/leads` redirects to `/admin/login` when not authed. ✓
+  - Login with `rr-admin-2024` → redirects to `/admin/leads`, data loads. ✓
+  - Dashboard shows 3 test leads with correct design breakdown (Modern 1, Portfolio 1, Trusted 1). ✓
+  - "Contacted" stat card + 7-day mini chart visible. ✓
+  - Clicking a table row opens the detail dialog with all lead info. ✓
+  - "Mark contacted" updates the badge to "Contacted" + persists to DB (verified via API: `contacted=True`). ✓
+  - Delete button opens confirmation dialog → confirming removes the lead (count 3→2, verified via API). ✓
+  - "Sign out" button visible in header. ✓
+  - Public site (`/`) still works — console clean, design switcher works, lead form renders. ✓
+- API verification:
+  - `POST /api/admin/auth/login` with correct password → 200, sets cookie. ✓
+  - `POST /api/admin/auth/login` with wrong password → 401. ✓
+  - `GET /api/leads` without cookie → 401. ✓
+  - `GET /api/leads` with cookie → 200, returns leads with `contacted`/`contactedAt`/`adminNote` fields. ✓
+  - `PATCH /api/leads/[id]` with `{ contacted: true }` → 200, updates lead. ✓
+  - `DELETE /api/leads/[id]` → 200, removes lead. ✓
+  - `PATCH/DELETE /api/leads/[id]` without auth → 401. ✓
+- DB state at end of round: 2 leads (Mike Driveway [contacted=True], Sarah Builder [contacted=False]).
+- QA screenshots saved under `/home/z/my-project/download/qa/round4-*`.
+
+Stage Summary:
+- Project status: STABLE & PRODUCTION-READY for a mockup review + lead-capture tool.
+- 0 bugs found this round (project was stable from round 6).
+- 3 major new feature areas added: (1) admin authentication (password-gated admin area with login/logout), (2) lead management workflow (detail dialog, delete with confirmation, mark contacted, admin notes), (3) admin stats enhancements (contacted count + 7-day mini bar chart).
+- The admin dashboard is now a proper CRM-lite: Rick can log in, see leads with conversion stats, mark leads as contacted, leave internal notes, and delete spam — all behind a password gate.
+- Files created/modified this round:
+  - `prisma/schema.prisma` (+contacted, +contactedAt, +adminNote, +updatedAt on Lead)
+  - `src/lib/admin-auth.ts` (NEW — HMAC cookie auth helpers)
+  - `src/app/api/admin/auth/login/route.ts` (NEW)
+  - `src/app/api/admin/auth/logout/route.ts` (NEW)
+  - `src/app/api/admin/auth/status/route.ts` (NEW)
+  - `src/app/api/leads/[id]/route.ts` (NEW — PATCH + DELETE)
+  - `src/app/api/leads/route.ts` (GET now requires admin auth + returns new fields)
+  - `src/app/admin/login/page.tsx` (NEW — login form)
+  - `src/app/admin/leads/page.tsx` (NEW — server-component auth gate)
+  - `src/app/admin/leads/dashboard.tsx` (renamed from page.tsx; +detail dialog, +delete confirm, +contacted toggle, +admin notes, +sign out, +contacted stat + 7-day chart)
+- Recommended next-phase priorities (for round 8, if needed):
+  1. Add email notification (Resend/SendGrid) when a new lead is submitted.
+  2. Replace placeholder business details in `src/lib/business-info.ts` with Rick's real info.
+  3. Add pagination to the admin dashboard (currently shows last 50 leads).
+  4. Add a "leads over time" line chart (longer time range than 7 days).
+  5. Add lead search by date range.

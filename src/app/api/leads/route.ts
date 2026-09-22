@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { createHash } from 'crypto';
+import { verifyAdminAuth } from '@/lib/admin-auth';
 
 // Simple in-memory rate limiting: max 5 lead submissions per IP per 10 min.
 // For a mockup / small-business site this is plenty.
@@ -103,10 +104,12 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// GET /api/leads — list recent leads (for the client dashboard).
-// In a real deployment you'd add auth here; for a mockup we leave it open
-// but only return the last 50.
-export async function GET() {
+// GET /api/leads — list recent leads (admin dashboard).
+// Requires admin auth (cookie). Returns last 50 with workflow fields.
+export async function GET(req: NextRequest) {
+  if (!verifyAdminAuth(req)) {
+    return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
+  }
   try {
     const leads = await db.lead.findMany({
       orderBy: { createdAt: 'desc' },
@@ -120,6 +123,9 @@ export async function GET() {
         message: true,
         design: true,
         estimate: true,
+        contacted: true,
+        contactedAt: true,
+        adminNote: true,
         createdAt: true,
       },
     });

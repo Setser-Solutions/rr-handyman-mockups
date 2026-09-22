@@ -46,7 +46,13 @@ model Lead {
   // was shown when they submitted (helpful for sales follow-up).
   estimate  String?
   ipHash    String?
+  // Admin workflow: whether Rick has contacted this lead yet + when.
+  contacted Boolean  @default(false)
+  contactedAt DateTime?
+  // Soft-notes the admin can attach (e.g. "Left voicemail, trying again Tues").
+  adminNote String?
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // DesignFeedback stores per-design review notes left by the client via the
