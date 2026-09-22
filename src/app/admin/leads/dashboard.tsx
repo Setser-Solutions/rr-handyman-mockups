@@ -15,6 +15,7 @@ import {
   Mail,
   MessageSquare,
   Phone,
+  Printer,
   RefreshCw,
   Search,
   Star,
@@ -41,6 +42,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
+import { toast } from 'sonner';
 import { BUSINESS } from '@/lib/business-info';
 import { cn } from '@/lib/utils';
 
@@ -311,6 +313,9 @@ export default function AdminLeadsDashboard() {
   const [serviceFilter, setServiceFilter] = useState<ServiceFilter>('all');
 
   const inFlightRef = useRef(false);
+  // Track the set of lead IDs we've already seen, so auto-refresh can
+  // detect NEW leads and fire a notification toast.
+  const knownLeadIdsRef = useRef<Set<string> | null>(null);
 
   const fetchData = useCallback(async () => {
     if (inFlightRef.current) return;
@@ -338,7 +343,32 @@ export default function AdminLeadsDashboard() {
         throw new Error(fbJson.error ?? 'Failed to fetch feedback');
       }
 
-      setLeads(leadsJson.leads ?? []);
+      const newLeads = leadsJson.leads ?? [];
+      // Detect newly-arrived leads (IDs we haven't seen before). On the
+      // first fetch we just seed the set without notifying. On subsequent
+      // fetches (auto-refresh), new IDs trigger a toast.
+      const incomingIds = new Set(newLeads.map((l) => l.id));
+      if (knownLeadIdsRef.current === null) {
+        // First load — seed the set silently.
+        knownLeadIdsRef.current = incomingIds;
+      } else {
+        const fresh = newLeads.filter((l) => !knownLeadIdsRef.current!.has(l.id));
+        if (fresh.length > 0) {
+          // Update the known set
+          for (const l of fresh) knownLeadIdsRef.current.add(l.id);
+          // Fire a toast for each new lead (cap at 3 to avoid spam)
+          fresh.slice(0, 3).forEach((l) => {
+            toast.success('New lead received!', {
+              description: `${l.name} · ${l.phone}${l.service ? ` · ${l.service}` : ''}`,
+            });
+          });
+          if (fresh.length > 3) {
+            toast.info(`${fresh.length - 3} more new lead${fresh.length - 3 === 1 ? '' : 's'}…`);
+          }
+        }
+      }
+
+      setLeads(newLeads);
       setFeedback(fbJson.feedback ?? []);
       setError(null);
       setLastRefresh(new Date());
@@ -484,31 +514,52 @@ export default function AdminLeadsDashboard() {
       }
     }
     const contactedCount = leads.filter((l) => l.contacted).length;
+    const conversionRate = totalLeads > 0 ? Math.round((contactedCount / totalLeads) * 100) : 0;
     const totalFeedback = feedback.length;
     const avgRating =
       feedback.length === 0
         ? 0
         : feedback.reduce((s, f) => s + (f.rating || 0), 0) / feedback.length;
-    // Leads per day for the last 7 days (for the mini bar chart).
-    const now = new Date();
-    const days: { label: string; count: number }[] = [];
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date(now);
-      d.setHours(0, 0, 0, 0);
-      d.setDate(d.getDate() - i);
-      const next = new Date(d);
-      next.setDate(next.getDate() + 1);
-      const count = leads.filter((l) => {
-        const t = new Date(l.createdAt);
-        return t >= d && t < next;
-      }).length;
-      days.push({
-        label: d.toLocaleDateString('en-US', { weekday: 'short' }),
-        count,
-      });
-    }
-    return { totalLeads, byDesign, contactedCount, totalFeedback, avgRating, days };
+
+    // Helper: compute leads-per-day for the last N days.
+    const computeDays = (n: number): { label: string; count: number; date: Date }[] => {
+      const out: { label: string; count: number; date: Date }[] = [];
+      const now = new Date();
+      for (let i = n - 1; i >= 0; i--) {
+        const d = new Date(now);
+        d.setHours(0, 0, 0, 0);
+        d.setDate(d.getDate() - i);
+        const next = new Date(d);
+        next.setDate(next.getDate() + 1);
+        const count = leads.filter((l) => {
+          const t = new Date(l.createdAt);
+          return t >= d && t < next;
+        }).length;
+        out.push({
+          label: d.toLocaleDateString('en-US', { weekday: 'short' }),
+          count,
+          date: d,
+        });
+      }
+      return out;
+    };
+
+    const days7 = computeDays(7);
+    const days30 = computeDays(30);
+    return {
+      totalLeads,
+      byDesign,
+      contactedCount,
+      conversionRate,
+      totalFeedback,
+      avgRating,
+      days7,
+      days30,
+    };
   }, [leads, feedback]);
+
+  // Chart range state (7d / 30d toggle)
+  const [chartRange, setChartRange] = useState<'7d' | '30d'>('7d');
 
   // Filtered leads
   const filteredLeads = useMemo(() => {
@@ -752,42 +803,97 @@ export default function AdminLeadsDashboard() {
                 icon={MessageSquare}
               />
 
-              {/* Contacted + 7-day mini chart */}
+              {/* Contacted + conversion rate + leads-over-time chart */}
               <Card className="border-stone-200 bg-white shadow-sm">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium text-stone-500">Contacted</p>
-                    <CheckCircle2
-                      className={cn(
-                        'size-4',
-                        stats.contactedCount > 0 ? 'text-emerald-500' : 'text-stone-300',
-                      )}
-                    />
+                    <p className="text-sm font-medium text-stone-500">Contacted & conversion</p>
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => setChartRange('7d')}
+                        aria-pressed={chartRange === '7d'}
+                        className={cn(
+                          'rounded-full px-2 py-0.5 text-[10px] font-semibold transition-colors',
+                          chartRange === '7d'
+                            ? 'bg-stone-900 text-white'
+                            : 'text-stone-400 hover:text-stone-700',
+                        )}
+                      >
+                        7d
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setChartRange('30d')}
+                        aria-pressed={chartRange === '30d'}
+                        className={cn(
+                          'rounded-full px-2 py-0.5 text-[10px] font-semibold transition-colors',
+                          chartRange === '30d'
+                            ? 'bg-stone-900 text-white'
+                            : 'text-stone-400 hover:text-stone-700',
+                        )}
+                      >
+                        30d
+                      </button>
+                    </div>
                   </div>
-                  <div className="mt-3 flex items-baseline gap-2">
-                    <span className="text-2xl font-bold text-stone-900">
-                      {stats.contactedCount}
-                    </span>
-                    <span className="text-xs text-stone-400">
-                      of {stats.totalLeads}
-                    </span>
+
+                  <div className="mt-3 flex items-baseline gap-3">
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="text-2xl font-bold text-stone-900">
+                        {stats.contactedCount}
+                      </span>
+                      <span className="text-xs text-stone-400">
+                        of {stats.totalLeads}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5 rounded-full bg-emerald-50 px-2 py-0.5">
+                      <CheckCircle2
+                        className={cn(
+                          'size-3',
+                          stats.contactedCount > 0 ? 'text-emerald-600' : 'text-stone-300',
+                        )}
+                      />
+                      <span className="text-xs font-semibold text-emerald-700">
+                        {stats.conversionRate}% converted
+                      </span>
+                    </div>
                   </div>
-                  {/* 7-day mini bar chart */}
-                  <div className="mt-4 flex items-end justify-between gap-1.5" aria-label="Leads in the last 7 days">
-                    {stats.days.map((d, i) => {
-                      const max = Math.max(1, ...stats.days.map((x) => x.count));
-                      const h = Math.max(4, Math.round((d.count / max) * 36));
+
+                  {/* Leads-over-time bar chart */}
+                  <div
+                    className="mt-4 flex items-end justify-between gap-px"
+                    aria-label={`Leads in the last ${chartRange === '7d' ? '7' : '30'} days`}
+                  >
+                    {(chartRange === '7d' ? stats.days7 : stats.days30).map((d, i) => {
+                      const days = chartRange === '7d' ? stats.days7 : stats.days30;
+                      const max = Math.max(1, ...days.map((x) => x.count));
+                      const h = Math.max(3, Math.round((d.count / max) * 48));
+                      // Show date label only on every Nth bar to avoid crowding
+                      const showLabel =
+                        chartRange === '7d' ||
+                        i % 5 === 0 ||
+                        i === days.length - 1;
                       return (
-                        <div key={i} className="flex flex-1 flex-col items-center gap-1">
+                        <div
+                          key={i}
+                          className="flex flex-1 flex-col items-center gap-0.5"
+                          title={`${d.count} lead${d.count === 1 ? '' : 's'} on ${d.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`}
+                        >
                           <div
                             className={cn(
                               'w-full rounded-sm transition-all',
-                              d.count > 0 ? 'bg-amber-400' : 'bg-stone-100',
+                              d.count > 0
+                                ? 'bg-amber-400 hover:bg-amber-500'
+                                : 'bg-stone-100 hover:bg-stone-200',
                             )}
                             style={{ height: `${h}px` }}
-                            title={`${d.count} lead${d.count === 1 ? '' : 's'} on ${d.label}`}
                           />
-                          <span className="text-[9px] text-stone-400">{d.label[0]}</span>
+                          {showLabel && (
+                            <span className="text-[8px] text-stone-400">
+                              {d.date.toLocaleDateString('en-US', { day: 'numeric' })}
+                            </span>
+                          )}
                         </div>
                       );
                     })}
@@ -1369,6 +1475,16 @@ export default function AdminLeadsDashboard() {
               </div>
 
               <DialogFooter className="gap-2 sm:gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => window.print()}
+                  className="text-stone-600 hover:bg-stone-100"
+                  title="Print this lead"
+                >
+                  <Printer className="size-4" />
+                  Print
+                </Button>
                 <Button
                   variant="outline"
                   size="sm"

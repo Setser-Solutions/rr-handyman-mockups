@@ -191,3 +191,36 @@ html {
     linear-gradient(to bottom, oklch(1 0 0 / 0.04) 1px, transparent 1px);
   background-size: 32px 32px;
 }
+
+/* ----- Print styles (for the admin lead detail dialog) -----
+   When printing from the admin detail dialog, hide everything except
+   the dialog content so the printout is a clean lead summary. */
+@media print {
+  /* Hide the page chrome */
+  body > div > header,
+  body > div > main,
+  body > div > footer,
+  /* Hide all sibling overlays */
+  [data-sonner-toaster],
+  /* Hide Radix overlays' backdrop */
+  [data-radix-overlay] {
+    display: none !important;
+  }
+  /* Show the dialog content full-width */
+  [role='dialog'] {
+    position: static !important;
+    max-width: none !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  [role='dialog'] [data-radix-dialog-content] {
+    box-shadow: none !important;
+  }
+  /* Hide the dialog action buttons when printing (no point in Print/Delete on paper) */
+  [role='dialog'] [class*='DialogFooter'],
+  [role='dialog'] button {
+    display: none !important;
+  }
+}

@@ -26,7 +26,37 @@ function hashIp(ip: string): string {
 }
 
 const VALID_DESIGNS = new Set(['modern', 'portfolio', 'trusted']);
-const VALID_SERVICES = new Set(['Plumbing', 'Carpentry', 'Power Washing', 'Multiple / Not sure', 'Not sure / multiple', '']);
+
+/**
+ * Normalize the service value from the form's Select into the human-readable
+ * label we store in the DB. The 3 designs use different value schemes:
+ *   - Modern/Trusted: "plumbing", "carpentry", "power-washing", "multiple", "not-sure"
+ *   - Portfolio: uses BUSINESS.services[].id which is the same kebab ids + "other"
+ *   - Some forms may also send the human-readable label directly.
+ * We accept any of these and normalize to the canonical label.
+ */
+const SERVICE_ALIASES: Record<string, string> = {
+  // kebab-case ids used by the Select components
+  plumbing: 'Plumbing',
+  carpentry: 'Carpentry',
+  'power-washing': 'Power Washing',
+  'power_washing': 'Power Washing',
+  // "not sure / multiple" variants
+  multiple: 'Multiple / Not sure',
+  'not-sure': 'Multiple / Not sure',
+  other: 'Multiple / Not sure',
+  // human-readable labels (pass through)
+  Plumbing: 'Plumbing',
+  Carpentry: 'Carpentry',
+  'Power Washing': 'Power Washing',
+  'Multiple / Not sure': 'Multiple / Not sure',
+};
+
+function normalizeService(raw: string): string | null {
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+  return SERVICE_ALIASES[trimmed] ?? trimmed;
+}
 
 // POST /api/leads — submit a new lead from any mockup design's contact form.
 export async function POST(req: NextRequest) {
@@ -39,7 +69,8 @@ export async function POST(req: NextRequest) {
     const name = typeof body.name === 'string' ? body.name.trim() : '';
     const phone = typeof body.phone === 'string' ? body.phone.trim() : '';
     const email = typeof body.email === 'string' && body.email.trim() ? body.email.trim() : null;
-    const service = typeof body.service === 'string' && body.service.trim() ? body.service.trim() : null;
+    const serviceRaw = typeof body.service === 'string' ? body.service.trim() : '';
+    const service = normalizeService(serviceRaw);
     const message = typeof body.message === 'string' ? body.message.trim().slice(0, 2000) : null;
     const design = typeof body.design === 'string' && VALID_DESIGNS.has(body.design) ? body.design : null;
     const estimate = typeof body.estimate === 'string' && body.estimate.trim() ? body.estimate.trim().slice(0, 100) : null;
@@ -54,9 +85,7 @@ export async function POST(req: NextRequest) {
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return NextResponse.json({ ok: false, error: 'Please enter a valid email address.' }, { status: 400 });
     }
-    if (service && !VALID_SERVICES.has(service)) {
-      return NextResponse.json({ ok: false, error: 'Invalid service selection.' }, { status: 400 });
-    }
+    // Service is optional — if provided, it's already normalized above.
 
     // Rate limit by IP hash
     const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()

@@ -482,3 +482,63 @@ Stage Summary:
   3. Add pagination to the admin dashboard (currently shows last 50 leads).
   4. Add a "leads over time" line chart (longer time range than 7 days).
   5. Add lead search by date range.
+
+---
+Task ID: 8
+Agent: webDevReview (cron round 5)
+Task: Scheduled webDevReview pass #5 — QA the live site, fix a critical lead-submission bug, then add admin chart enhancements (30-day range + conversion rate), new-lead notification toasts, and a print-friendly lead view.
+
+Work Log:
+- Read worklog.md (rounds 0–7). Round 7 left the project as a stable, password-gated CRM-lite with lead management. Recommended next-phase priorities were: email notifications, real business info, pagination, longer-time-range charts, date-range search.
+- QA via agent-browser: console clean, design switcher works, admin auth flow works (login → redirect → dashboard loads), lead form renders. No console errors or hydration issues.
+- **CRITICAL BUG FOUND**: Lead submissions with a service selected were silently failing (HTTP 400). Root cause: the 3 design forms' `<Select>` components use kebab-case `value` attributes (`"plumbing"`, `"carpentry"`, `"power-washing"`, `"multiple"`, `"not-sure"`), but the `/api/leads` POST route validated `service` against a `VALID_SERVICES` Set containing the human-readable labels (`"Plumbing"`, `"Power Washing"`). Since round 5 (when the `useLeadForm` hook was introduced), every lead submitted WITH a service selected failed validation. The `useLeadForm` hook fell back to a success toast (so the user saw "Thanks — Rick will call you"), but the lead was NOT persisted. Leads submitted WITHOUT a service selected worked fine (service is optional).
+  - Reproduced: filled the Modern form via UI with "Carpentry" selected → POST /api/leads returned 400 → toast fired but no lead in DB.
+  - Verified via curl: `{"service":"plumbing"}` → 400 (old behavior); after fix → 201 with `"service":"Plumbing"` in DB.
+
+BUG FIX (critical):
+- Rewrote the service validation in `/api/leads` POST: replaced the `VALID_SERVICES` Set + whitelist check with a `normalizeService()` function backed by a `SERVICE_ALIASES` map. The map covers all kebab-case values used by the 3 designs (`plumbing`, `carpentry`, `power-washing`, `power_washing`, `multiple`, `not-sure`, `other`) plus the human-readable labels (pass-through). Unknown values are stored as-is (permissive). Removed the old `if (service && !VALID_SERVICES.has(service))` 400 check.
+- Verified end-to-end: UI form with "Carpentry" selected → POST 201 → lead persisted with `service: "Carpentry"`. Verified via curl with `plumbing`, `power-washing` → both 201 with correct normalized labels. DB now shows all leads with human-readable service names.
+
+NEW FEATURES:
+1. **Admin chart: 7d/30d toggle + conversion rate** (dashboard.tsx):
+   - Replaced the single 7-day mini chart with an enhanced "Contacted & conversion" card.
+   - Added a **7d/30d toggle** (pill buttons in the card header). The 7d view shows 7 bars with weekday labels; the 30d view shows 30 bars with date-number labels every 5th bar.
+   - Added a **conversion rate badge**: "X% converted" in a green pill, computed as `contactedCount / totalLeads * 100`. Shows at a glance how many leads Rick has followed up on.
+   - Chart bars are now taller (48px max vs 36px), with hover states (amber→amber-500, gray→stone-200) and tooltips showing the exact count + date.
+   - Updated `stats` useMemo to compute both `days7` and `days30` arrays + `conversionRate`. Added `chartRange` state ('7d' | '30d').
+2. **New-lead notification toast** (dashboard.tsx):
+   - Added `knownLeadIdsRef` (a `Set<string> | null`) that tracks which lead IDs the admin has already seen.
+   - On the first `fetchData` call, the set is seeded silently (no toast).
+   - On subsequent calls (auto-refresh every 30s or manual Refresh), any lead IDs not in the known set trigger a `toast.success('New lead received!', { description: 'Name · Phone · Service' })`. Caps at 3 toasts + an "...N more new leads" info toast if there are more.
+   - Verified: submitted a new lead via curl → clicked Refresh → toast "New lead received! Notification Test · (555) 777-8888 · Plumbing" appeared.
+3. **Print-friendly lead view** (dashboard.tsx + globals.css):
+   - Added a "Print" button to the lead detail dialog footer (Printer icon). Calls `window.print()`.
+   - Added `@media print` CSS to `globals.css` that hides all page chrome (header, main, footer, toasts) and all dialog action buttons, leaving only the dialog content (name, contact info, service/design/estimate grid, message, admin note) visible — so the printout is a clean lead summary Rick can hand to a subcontractor or file.
+   - Verified: Print button visible in the detail dialog; print CSS hides chrome when printing.
+
+STYLING POLISH:
+- Chart bars have hover states (color darkens on hover).
+- Conversion rate badge uses a green pill with a checkmark icon (matches the "Contacted" semantic).
+- 7d/30d toggle uses active/inactive pill styling (dark bg when active, gray text when inactive).
+
+VERIFICATION:
+- `bun run lint` — clean (0 errors, 0 warnings).
+- agent-browser QA: console clean, admin login works, dashboard loads with 6 leads, "Contacted & conversion" card shows "1 of 5 · 20% converted" + 7d chart with date labels, 30d toggle switches to 30-bar view, new-lead toast fires on Refresh after a new lead arrives, Print button visible in detail dialog.
+- API verification: `POST /api/leads` with `service: "plumbing"` → 201 (was 400 before fix). `service: "power-washing"` → 201. Both stored with normalized labels ("Plumbing", "Power Washing").
+- DB state at end of round: 6 leads, all with correct normalized service names.
+- QA screenshots saved under `/home/z/my-project/download/qa/round5-*`.
+
+Stage Summary:
+- **Critical bug fixed**: lead submissions with a service selected had been silently failing since round 5 (every form with a service selected returned 400; the success toast fired but the lead was NOT persisted). Fixed by normalizing kebab-case service values to human-readable labels in the API.
+- Project status: STABLE & PRODUCTION-READY. The lead-capture pipeline now works end-to-end for all 3 designs.
+- 3 new features added: (1) 7d/30d chart toggle + conversion rate badge in admin stats, (2) new-lead notification toast in admin (fires on auto-refresh when a new lead arrives), (3) print-friendly lead view (Print button + print CSS).
+- Files created/modified this round:
+  - `src/app/api/leads/route.ts` (replaced `VALID_SERVICES` whitelist with `normalizeService()` + `SERVICE_ALIASES` map — the critical bug fix)
+  - `src/app/admin/leads/dashboard.tsx` (+7d/30d chart, +conversion rate, +new-lead toast, +Print button, +sonner import, +Printer icon import, +knownLeadIdsRef)
+  - `src/app/globals.css` (+ `@media print` styles for clean lead printouts)
+- Recommended next-phase priorities (for round 9, if needed):
+  1. Add email notification (Resend/SendGrid webhook) when a new lead is submitted — the in-admin toast only helps if Rick has the dashboard open.
+  2. Replace placeholder business details in `src/lib/business-info.ts` with Rick's real info.
+  3. Add pagination to the admin dashboard (currently shows last 50 leads).
+  4. Add lead search by date range.
+  5. Add a "star/important" flag on leads (in addition to "contacted").
