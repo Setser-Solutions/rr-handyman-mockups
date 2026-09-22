@@ -610,3 +610,55 @@ Stage Summary:
   3. Add bulk actions (select multiple leads → mark all contacted / delete all / export selected).
   4. Add a "leads by service" pie/donut chart in the admin stats.
   5. Add keyboard shortcuts in the admin (e.g. J/K to navigate rows, Enter to open detail).
+
+---
+Task ID: 10
+Agent: webDevReview (cron round 7)
+Task: Scheduled webDevReview pass #7 — QA the live site, fix the scroll-behavior dev warning, then add a "leads by service" donut chart to the admin stats.
+
+Work Log:
+- Read worklog.md (rounds 0–9). Round 9 added admin pagination, date-range filter, and star/important flag. Recommended next-phase priorities were: email notifications, real business info, bulk actions, service pie chart, keyboard shortcuts.
+- QA via agent-browser: console clean (no hydration errors), all 3 designs switch correctly, admin auth flow works, 15 leads loaded, pagination + star + date filters all functional. Found 1 minor dev warning: Next.js detected `scroll-behavior: smooth` on `<html>` without the `data-scroll-behavior="smooth"` attribute, which can interfere with route transitions.
+- BUG FIX (minor): Added `data-scroll-behavior="smooth"` to the `<html>` element in `src/app/layout.tsx`. Verified the warning is gone after reload.
+
+NEW FEATURES:
+1. **"Leads by service" donut chart** in admin stats (dashboard.tsx):
+   - Added a `ServiceDonut` component — a pure-SVG donut chart (no chart library needed) showing the breakdown of leads by normalized service. Each slice is colored with a fixed palette matching the site's design accents:
+     - Plumbing → amber-500 (#f59e0b)
+     - Carpentry → emerald-600 (#059669)
+     - Power Washing → orange-600 (#ea580c)
+     - Multiple / Not sure → stone-500 (#78716c)
+   - The donut shows the total lead count in the center with "leads" label below.
+   - Each slice has a `<title>` tooltip showing "Service: count (percent)".
+   - A legend to the right lists each service with a colored dot, count, and percentage.
+   - Computed `byService` in the stats useMemo using the existing `normalizeService()` function (so it works with all the kebab-case values the forms send).
+   - Added the donut card as a 6th stat card in the stats grid (changed grid from `md:grid-cols-4` to `md:grid-cols-3` for a cleaner 2×3 layout).
+   - Empty state shows "No leads yet" when there are 0 leads.
+   - Refactored the slice computation to use `.reduce()` instead of mutating an `offset` variable (the `react-hooks/immutability` lint rule flagged the mutation).
+   - Verified via VLM: the donut renders with colored slices + legend showing "Plumbing 11 (73%), Carpentry 2 (13%), Power Washing 2 (13%)" + center "15 leads".
+
+STYLING POLISH:
+- Stats grid changed from 4-col to 3-col on desktop for a more balanced 2×3 layout with the new donut card.
+- Donut chart uses the same color palette as the rest of the site (amber/emerald/orange) for visual consistency.
+- Legend rows use consistent text sizing + colored dots matching the design filter pills.
+
+VERIFICATION:
+- `bun run lint` — clean (0 errors, 0 warnings).
+- agent-browser QA: console clean (scroll-behavior warning gone), admin dashboard loads with 15 leads, donut chart renders with 3 colored slices + legend, all existing features (pagination, star, date filter, conversion rate, 7d/30d chart) still work.
+- Public site (`/`) loads correctly, no console errors.
+- DB state: 15 leads (11 Plumbing, 2 Carpentry, 2 Power Washing).
+- QA screenshots saved under `/home/z/my-project/download/qa/round7-*`.
+
+Stage Summary:
+- Project status: STABLE & FEATURE-RICH. The admin dashboard now has a visual service breakdown.
+- 1 minor bug fixed (scroll-behavior dev warning).
+- 1 new feature added: "Leads by service" donut chart (pure SVG, no deps) with colored slices + legend + center total + tooltips + empty state.
+- Files modified this round:
+  - `src/app/layout.tsx` (+data-scroll-behavior on <html>)
+  - `src/app/admin/leads/dashboard.tsx` (+ServiceDonut component, +byService stat, +donut card in stats, grid changed to md:grid-cols-3)
+- Recommended next-phase priorities (for round 11, if needed):
+  1. Add email notification (Resend/SendGrid) when a new lead is submitted.
+  2. Replace placeholder business details in `src/lib/business-info.ts` with Rick's real info.
+  3. Add bulk actions (select multiple leads → mark all contacted / delete all / export selected).
+  4. Add keyboard shortcuts in the admin (J/K to navigate rows, Enter to open detail).
+  5. Add a "leads by design" donut or bar chart (complementing the by-service one).

@@ -197,6 +197,141 @@ function truncate(text: string, max = 60): string {
   return `${text.slice(0, max).trimEnd()}…`;
 }
 
+// ----- Service donut chart (pure SVG, no deps) -----
+// Renders a donut showing the breakdown of leads by service. Each slice is
+// colored with a fixed palette. The center shows the total count.
+
+const SERVICE_COLORS: Record<string, string> = {
+  Plumbing: '#f59e0b',      // amber-500
+  Carpentry: '#059669',     // emerald-600
+  'Power Washing': '#ea580c', // orange-600
+  'Multiple / Not sure': '#78716c', // stone-500
+};
+const SERVICE_COLOR_FALLBACK = '#d6d3d1'; // stone-300
+
+function ServiceDonut({
+  byService,
+  total,
+}: {
+  byService: Record<string, number>;
+  total: number;
+}) {
+  const entries = Object.entries(byService)
+    .filter(([, count]) => count > 0)
+    .sort((a, b) => b[1] - a[1]);
+
+  if (entries.length === 0 || total === 0) {
+    return (
+      <div className="mt-4 flex items-center justify-center py-6 text-xs text-stone-400">
+        No leads yet
+      </div>
+    );
+  }
+
+  // SVG donut: circumference = 2πr. We use r=38, so C≈238.76.
+  const radius = 38;
+  const circumference = 2 * Math.PI * radius;
+
+  // Precompute each slice's dash + offset (running sum of previous dashes).
+  const slices = entries.reduce<
+    { service: string; count: number; color: string; dash: number; offset: number; pct: number }[]
+  >((acc, [service, count]) => {
+    const fraction = count / total;
+    const dash = fraction * circumference;
+    const prevOffset = acc.length > 0 ? acc[acc.length - 1].offset + acc[acc.length - 1].dash : 0;
+    acc.push({
+      service,
+      count,
+      color: SERVICE_COLORS[service] ?? SERVICE_COLOR_FALLBACK,
+      dash,
+      offset: prevOffset,
+      pct: Math.round(fraction * 100),
+    });
+    return acc;
+  }, []);
+
+  return (
+    <div className="mt-4 flex items-center gap-4">
+      {/* Donut SVG */}
+      <svg
+        width="100"
+        height="100"
+        viewBox="0 0 100 100"
+        className="shrink-0"
+        role="img"
+        aria-label={`Leads by service: ${entries.map(([s, c]) => `${s} ${c}`).join(', ')}`}
+      >
+        {/* Background ring */}
+        <circle
+          cx="50"
+          cy="50"
+          r={radius}
+          fill="none"
+          stroke="#f5f5f4"
+          strokeWidth="14"
+        />
+        {/* Slices */}
+        {slices.map((s) => (
+          <circle
+            key={s.service}
+            cx="50"
+            cy="50"
+            r={radius}
+            fill="none"
+            stroke={s.color}
+            strokeWidth="14"
+            strokeDasharray={`${s.dash} ${circumference - s.dash}`}
+            strokeDashoffset={-s.offset}
+            transform="rotate(-90 50 50)"
+            style={{ transition: 'stroke-dasharray 0.3s ease' }}
+          >
+            <title>{`${s.service}: ${s.count} (${s.pct}%)`}</title>
+          </circle>
+        ))}
+        {/* Center total */}
+        <text
+          x="50"
+          y="46"
+          textAnchor="middle"
+          className="fill-stone-900"
+          style={{ fontSize: '18px', fontWeight: 700 }}
+        >
+          {total}
+        </text>
+        <text
+          x="50"
+          y="60"
+          textAnchor="middle"
+          className="fill-stone-400"
+          style={{ fontSize: '8px', fontWeight: 500 }}
+        >
+          leads
+        </text>
+      </svg>
+
+      {/* Legend */}
+      <div className="flex-1 space-y-1.5">
+        {slices.map((s) => (
+          <div key={s.service} className="flex items-center justify-between gap-2 text-xs">
+            <span className="flex items-center gap-1.5 text-stone-700">
+              <span
+                className="size-2.5 shrink-0 rounded-full"
+                style={{ backgroundColor: s.color }}
+                aria-hidden
+              />
+              {s.service}
+            </span>
+            <span className="font-medium text-stone-900">
+              {s.count}
+              <span className="ml-1 text-stone-400">({s.pct}%)</span>
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ----- Small presentational components -----
 
 function StatCard({
@@ -555,6 +690,12 @@ export default function AdminLeadsDashboard() {
         byDesign[l.design as DesignKey] += 1;
       }
     }
+    // Leads by service (normalized) for the donut chart.
+    const byService: Record<string, number> = {};
+    for (const l of leads) {
+      const s = normalizeService(l.service);
+      byService[s] = (byService[s] ?? 0) + 1;
+    }
     const contactedCount = leads.filter((l) => l.contacted).length;
     const starredCount = leads.filter((l) => l.starred).length;
     const conversionRate = totalLeads > 0 ? Math.round((contactedCount / totalLeads) * 100) : 0;
@@ -592,6 +733,7 @@ export default function AdminLeadsDashboard() {
     return {
       totalLeads,
       byDesign,
+      byService,
       contactedCount,
       starredCount,
       conversionRate,
@@ -800,7 +942,7 @@ export default function AdminLeadsDashboard() {
         )}
 
         {/* Stats row */}
-        <section aria-label="Quick stats" className="grid grid-cols-2 gap-4 md:grid-cols-4">
+        <section aria-label="Quick stats" className="grid grid-cols-2 gap-4 md:grid-cols-3">
           {loading && stats.totalLeads === 0 && !error ? (
             <>
               {[0, 1, 2, 3].map((i) => (
@@ -963,6 +1105,17 @@ export default function AdminLeadsDashboard() {
                       );
                     })}
                   </div>
+                </CardContent>
+              </Card>
+
+              {/* Leads by service donut chart */}
+              <Card className="border-stone-200 bg-white shadow-sm">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-medium text-stone-500">By service</p>
+                    <TrendingUp className="size-4 text-stone-400" />
+                  </div>
+                  <ServiceDonut byService={stats.byService} total={stats.totalLeads} />
                 </CardContent>
               </Card>
             </>
