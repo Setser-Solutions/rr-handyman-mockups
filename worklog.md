@@ -662,3 +662,64 @@ Stage Summary:
   3. Add bulk actions (select multiple leads → mark all contacted / delete all / export selected).
   4. Add keyboard shortcuts in the admin (J/K to navigate rows, Enter to open detail).
   5. Add a "leads by design" donut or bar chart (complementing the by-service one).
+
+---
+Task ID: 11
+Agent: webDevReview (cron round 8)
+Task: Scheduled webDevReview pass #8 — QA the live site, then add bulk actions (select multiple leads + mark all contacted / uncontacted / delete all) to the admin dashboard.
+
+Work Log:
+- Read worklog.md (rounds 0–10). Round 10 added the "leads by service" donut chart + fixed the scroll-behavior warning. Recommended next-phase priorities were: email notifications, real business info, bulk actions, keyboard shortcuts, by-design chart.
+- QA via agent-browser: console clean, all 3 designs switch, admin auth works, 16 leads loaded, donut chart renders, lead form submits + persists. No bugs found.
+- Selected focus for this round: bulk actions (the #3 recommended priority — high practical value for Rick when managing many leads).
+
+NEW FEATURE: Bulk actions for leads (dashboard.tsx)
+- Added `selectedIds` state (Set<string>), `bulkConfirmOpen` state, and `bulkAction` state ('delete' | 'contacted' | 'uncontacted' | null).
+- Added a **checkbox column** to the leads table:
+  - Header checkbox: "Select all leads on this page" — toggles all leads on the current page.
+  - Per-row checkbox: "Select lead {name}" — toggles individual lead selection.
+  - Checkbox clicks stop propagation so they don't open the detail dialog.
+  - Selected rows get a subtle amber background (`bg-amber-50/60`).
+- Added a **bulk-action bar** that appears above the table when leads are selected:
+  - Shows "N selected" count.
+  - "Mark all contacted" button (emerald accent).
+  - "Mark uncontacted" button (stone accent).
+  - "Delete all" button (red accent).
+  - "Clear" button to deselect all.
+- Added a **bulk-action confirmation dialog** with action-specific copy:
+  - Delete: "Delete N leads? This permanently removes all selected leads..."
+  - Contacted: "Mark N leads as contacted? This updates the contacted status..."
+  - Shows the correct icon + button label per action.
+- Added `executeBulkAction()` function: fires PATCH/DELETE per selected lead in parallel (via Promise.allSettled), then clears selection + closes dialog + refreshes data.
+- Added `toggleSelectOne(id)`, `toggleSelectPage()`, and `clearSelection()` helpers.
+
+BUG FOUND & FIXED during implementation:
+- The initial implementation placed `toggleSelectPage` (which references `paginatedLeads`) BEFORE `paginatedLeads` was declared. Since `const` declarations are hoisted but not initialized, this caused a runtime crash ("Application error: a client-side exception has occurred") when the dashboard tried to render.
+- Fixed by moving `toggleSelectPage` and `executeBulkAction` AFTER `paginatedLeads` is defined. `toggleSelectOne` and `clearSelection` (which don't depend on `paginatedLeads`) stayed in their original location.
+- Verified: dashboard loads correctly after the fix.
+
+VERIFICATION:
+- `bun run lint` — clean (0 errors, 0 warnings).
+- agent-browser QA: 
+  - Dashboard loads with 16 leads, checkboxes visible (header + per-row). ✓
+  - Selecting individual leads → bulk bar appears with "N selected" + action buttons. ✓
+  - Select-all-on-page → "10 selected" (page 1 has 10 leads). ✓
+  - Click "Mark all contacted" → confirmation dialog "Mark 10 leads as contacted?" ✓
+  - Confirm → leads updated, "Contacted" stat changed from 1 to 11 of 16 (69% converted). ✓
+  - DB verified: 11 leads have `contacted=True` (was 1 before). ✓
+  - Public site unaffected, no console errors. ✓
+- DB state at end of round: 16 leads, 11 contacted (69% conversion rate).
+- QA screenshots saved under `/home/z/my-project/download/qa/round8-*`.
+
+Stage Summary:
+- Project status: STABLE & FEATURE-RICH. The admin dashboard now supports bulk lead management.
+- 1 bug found and fixed during implementation (useCallback referencing a not-yet-declared const — moved the callbacks after paginatedLeads).
+- 1 new feature added: bulk actions (select all on page / select individual, bulk mark contacted / uncontacted / delete with confirmation dialog, parallel API calls, optimistic refresh).
+- Files modified this round:
+  - `src/app/admin/leads/dashboard.tsx` (+selectedIds state, +bulk action bar, +checkbox column, +bulk confirmation dialog, +executeBulkAction/toggleSelectPage/toggleSelectOne/clearSelection functions, +bug fix for declaration order)
+- Recommended next-phase priorities (for round 12, if needed):
+  1. Add email notification (Resend/SendGrid) when a new lead is submitted.
+  2. Replace placeholder business details in `src/lib/business-info.ts` with Rick's real info.
+  3. Add keyboard shortcuts in the admin (J/K to navigate rows, Enter to open detail, Space to select).
+  4. Add a "leads by design" donut or bar chart (complementing the by-service one).
+  5. Add CSV export of only the selected leads.

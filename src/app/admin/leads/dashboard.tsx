@@ -445,6 +445,11 @@ export default function AdminLeadsDashboard() {
   const [detailSaving, setDetailSaving] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
+  // Bulk-selection state (set of lead IDs selected for bulk actions)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkConfirmOpen, setBulkConfirmOpen] = useState(false);
+  const [bulkAction, setBulkAction] = useState<'delete' | 'contacted' | 'uncontacted' | null>(null);
+
   // Filter state
   const [search, setSearch] = useState('');
   const [designFilter, setDesignFilter] = useState<DesignFilter>('all');
@@ -681,6 +686,23 @@ export default function AdminLeadsDashboard() {
     window.location.href = '/admin/login';
   }, []);
 
+  // ===== Bulk selection helpers =====
+  // NOTE: toggleSelectPage and executeBulkAction are defined AFTER
+  // paginatedLeads (below) because they reference it. toggleSelectOne and
+  // clearSelection don't depend on paginatedLeads so they're safe here.
+  const toggleSelectOne = useCallback((id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const clearSelection = useCallback(() => {
+    setSelectedIds(new Set());
+  }, []);
+
   // Derived stats
   const stats = useMemo(() => {
     const totalLeads = leads.length;
@@ -786,6 +808,41 @@ export default function AdminLeadsDashboard() {
     const start = (safePage - 1) * pageSize;
     return filteredLeads.slice(start, start + pageSize);
   }, [filteredLeads, safePage]);
+
+  // Bulk-selection helpers that depend on paginatedLeads (must be defined after it).
+  const toggleSelectPage = useCallback(() => {
+    setSelectedIds((prev) => {
+      const pageIds = paginatedLeads.map((l) => l.id);
+      const allSelected = pageIds.every((id) => prev.has(id));
+      const next = new Set(prev);
+      if (allSelected) {
+        for (const id of pageIds) next.delete(id);
+      } else {
+        for (const id of pageIds) next.add(id);
+      }
+      return next;
+    });
+  }, [paginatedLeads]);
+
+  const executeBulkAction = useCallback(async () => {
+    if (!bulkAction || selectedIds.size === 0) return;
+    const ids = Array.from(selectedIds);
+    const ops = ids.map((id) => {
+      if (bulkAction === 'delete') {
+        return fetch(`/api/leads/${id}`, { method: 'DELETE' });
+      }
+      return fetch(`/api/leads/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contacted: bulkAction === 'contacted' }),
+      });
+    });
+    await Promise.allSettled(ops);
+    clearSelection();
+    setBulkConfirmOpen(false);
+    setBulkAction(null);
+    await fetchData();
+  }, [bulkAction, selectedIds, clearSelection, fetchData]);
 
   // Grouped feedback by design
   const groupedFeedback = useMemo(() => {
@@ -1332,6 +1389,47 @@ export default function AdminLeadsDashboard() {
                 </CardHeader>
 
                 <CardContent className="p-0">
+                  {/* Bulk-action bar (appears when leads are selected) */}
+                  {selectedIds.size > 0 && (
+                    <div className="flex flex-wrap items-center gap-2 border-b border-stone-200 bg-amber-50/80 px-4 py-2.5">
+                      <span className="text-sm font-medium text-stone-900">
+                        {selectedIds.size} selected
+                      </span>
+                      <div className="ml-auto flex flex-wrap items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => { setBulkAction('contacted'); setBulkConfirmOpen(true); }}
+                          className="inline-flex items-center gap-1.5 rounded-md border border-emerald-200 bg-white px-3 py-1.5 text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-50"
+                        >
+                          <CheckCircle2 className="size-3.5" />
+                          Mark all contacted
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => { setBulkAction('uncontacted'); setBulkConfirmOpen(true); }}
+                          className="inline-flex items-center gap-1.5 rounded-md border border-stone-200 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 transition-colors hover:bg-stone-100"
+                        >
+                          <X className="size-3.5" />
+                          Mark uncontacted
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => { setBulkAction('delete'); setBulkConfirmOpen(true); }}
+                          className="inline-flex items-center gap-1.5 rounded-md border border-red-200 bg-white px-3 py-1.5 text-xs font-medium text-red-700 transition-colors hover:bg-red-50"
+                        >
+                          <Trash2 className="size-3.5" />
+                          Delete all
+                        </button>
+                        <button
+                          type="button"
+                          onClick={clearSelection}
+                          className="inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-xs font-medium text-stone-500 transition-colors hover:bg-stone-100 hover:text-stone-700"
+                        >
+                          Clear
+                        </button>
+                      </div>
+                    </div>
+                  )}
                   {loading ? (
                     <div className="divide-y divide-stone-100">
                       {Array.from({ length: 5 }).map((_, i) => (
@@ -1357,6 +1455,18 @@ export default function AdminLeadsDashboard() {
                       <table className="w-full text-sm">
                         <thead className="sticky top-0 z-10 bg-stone-50">
                           <tr className="border-b border-stone-200">
+                            <th scope="col" className="w-10 px-4 py-3">
+                              <input
+                                type="checkbox"
+                                checked={
+                                  paginatedLeads.length > 0 &&
+                                  paginatedLeads.every((l) => selectedIds.has(l.id))
+                                }
+                                onChange={toggleSelectPage}
+                                aria-label="Select all leads on this page"
+                                className="size-4 cursor-pointer rounded border-stone-300 text-stone-900 focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-1"
+                              />
+                            </th>
                             <th
                               scope="col"
                               className="whitespace-nowrap px-4 py-3 text-left font-medium text-stone-600"
@@ -1407,12 +1517,25 @@ export default function AdminLeadsDashboard() {
                         <tbody>
                           {paginatedLeads.map((lead) => {
                             const meta = getDesignMeta(lead.design);
+                            const isSelected = selectedIds.has(lead.id);
                             return (
                               <tr
                                 key={lead.id}
                                 onClick={() => openDetail(lead)}
-                                className="cursor-pointer border-b border-stone-100 transition-colors hover:bg-amber-50/40"
+                                className={cn(
+                                  'cursor-pointer border-b border-stone-100 transition-colors hover:bg-amber-50/40',
+                                  isSelected && 'bg-amber-50/60',
+                                )}
                               >
+                                <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                                  <input
+                                    type="checkbox"
+                                    checked={isSelected}
+                                    onChange={() => toggleSelectOne(lead.id)}
+                                    aria-label={`Select lead ${lead.name}`}
+                                    className="size-4 cursor-pointer rounded border-stone-300 text-stone-900 focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-1"
+                                  />
+                                </td>
                                 <td className="whitespace-nowrap px-4 py-3 text-stone-600">
                                   <div className="font-medium text-stone-700">
                                     {formatDateTime(lead.createdAt)}
@@ -1939,6 +2062,68 @@ export default function AdminLeadsDashboard() {
             >
               <Trash2 className="size-4" />
               Delete lead
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ===== Bulk action confirmation dialog ===== */}
+      <Dialog open={bulkConfirmOpen} onOpenChange={(o) => { if (!o) { setBulkConfirmOpen(false); setBulkAction(null); } }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {bulkAction === 'delete' ? (
+                <Trash2 className="size-5 text-red-500" />
+              ) : bulkAction === 'contacted' ? (
+                <CheckCircle2 className="size-5 text-emerald-600" />
+              ) : (
+                <X className="size-5 text-stone-500" />
+              )}
+              {bulkAction === 'delete'
+                ? `Delete ${selectedIds.size} leads?`
+                : bulkAction === 'contacted'
+                ? `Mark ${selectedIds.size} leads as contacted?`
+                : `Mark ${selectedIds.size} leads as not contacted?`}
+            </DialogTitle>
+            <DialogDescription>
+              {bulkAction === 'delete'
+                ? 'This permanently removes all selected leads from the database. This action cannot be undone.'
+                : 'This updates the contacted status for all selected leads. You can undo this later.'}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => { setBulkConfirmOpen(false); setBulkAction(null); }}
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => void executeBulkAction()}
+              className={cn(
+                bulkAction === 'delete'
+                  ? 'bg-red-600 text-white hover:bg-red-700'
+                  : 'bg-stone-900 text-white hover:bg-stone-800',
+              )}
+            >
+              {bulkAction === 'delete' ? (
+                <>
+                  <Trash2 className="size-4" />
+                  Delete {selectedIds.size} leads
+                </>
+              ) : bulkAction === 'contacted' ? (
+                <>
+                  <CheckCircle2 className="size-4" />
+                  Mark contacted
+                </>
+              ) : (
+                <>
+                  <X className="size-4" />
+                  Mark uncontacted
+                </>
+              )}
             </Button>
           </div>
         </DialogContent>
