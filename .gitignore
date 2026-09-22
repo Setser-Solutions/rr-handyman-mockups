@@ -52,3 +52,7 @@ prompt
 server.log
 # Skills directory
 /skills/
+# Development artifacts (QA screenshots, debug images, iCloud pull scripts)
+download/
+debug-*.png
+*.pid
