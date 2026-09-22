@@ -780,3 +780,47 @@ Stage Summary:
   3. Add CSV export of only the selected leads (complement to bulk actions).
   4. Add a "help" dialog in the admin showing all keyboard shortcuts (like the `?` dialog on the public site).
   5. Add a "recent activity" feed showing the latest actions (new lead, marked contacted, deleted).
+
+---
+Task ID: 13
+Agent: webDevReview (cron round 10)
+Task: Scheduled webDevReview pass #10 — QA the live site, then add CSV export of selected leads + an admin keyboard-shortcuts help dialog (? key).
+
+Work Log:
+- Read worklog.md (rounds 0–12). Round 12 added keyboard shortcuts (J/K/Enter/Space) + "Leads by design" donut chart. Recommended next-phase priorities were: email notifications, real business info, CSV export of selected, admin help dialog, recent activity feed.
+- QA via agent-browser: console clean, all 3 designs switch, admin auth works, 16 leads loaded, both donuts render, keyboard hint visible, J focuses a row, bulk actions work. No bugs found.
+- Selected focus for this round: CSV export of selected leads + admin `?` help dialog (priorities #3 and #4 from the recommended list).
+
+NEW FEATURES:
+1. **CSV export of selected leads** (dashboard.tsx):
+   - Added `exportSelectedLeadsCsv()` function that filters leads to only those in `selectedIds`, then downloads a CSV with the same columns as the full export (Date, Name, Phone, Email, Service, Design, Estimate, Message, Contacted, Starred, Admin Note).
+   - Added an "Export selected" button to the bulk-action bar (next to "Delete all" and "Clear"), with a Download icon + tooltip.
+   - The export does NOT clear the selection (so the user can export, then continue with other bulk actions).
+   - Also enhanced the existing `exportLeadsCsv()` to include the new Contacted/Starred/Admin Note columns (was only Date/Name/Phone/Email/Service/Design/Estimate/Message).
+   - Verified: selected 10 leads → "Export selected" button appeared → clicked → CSV download triggered → selection remained intact.
+2. **Admin keyboard-shortcuts help dialog** (`?` key, dashboard.tsx):
+   - Added `helpOpen` state + a `?` keyboard handler in the existing keydown `useEffect`. The `?` key toggles the help dialog (works on any tab, even with other dialogs open, except when the help dialog itself is open — then Esc closes it via Radix).
+   - Added a `KeyboardShortcutsHelp` dialog (using shadcn Dialog) showing all 6 shortcuts: J/↓ (focus next row), K/↑ (focus previous row), Enter (open detail), Space (toggle selection), Esc (clear selection), ? (open/close this help). Each shortcut uses `<kbd>` elements for the keys.
+   - Includes a tip at the bottom: "Use the checkbox in the header to select all leads on the current page, then use the bulk-action bar to mark them all contacted or export just the selected ones."
+   - Added a "?" / "Help" button in the admin header (next to "View site" and "Sign out") for discoverability — clicking it opens the same dialog.
+   - Verified via agent-browser: `?` key opens the dialog, Escape closes it, VLM confirmed all 6 shortcuts + tip are visible.
+
+VERIFICATION:
+- `bun run lint` — clean (0 errors, 0 warnings).
+- agent-browser QA: console clean, both donuts render, keyboard hint visible, `?` opens help dialog with all 6 shortcuts + tip, Escape closes it, "Export selected" button appears when leads are selected, clicking it triggers CSV download, selection remains intact after export, public site unaffected.
+- VLM verified: help dialog shows all 6 shortcuts (J/↓, K/↑, Enter, Space, Esc, ?) with descriptions + the bulk-action tip.
+- DB state: 16 leads (unchanged from round 12).
+- QA screenshots saved under `/home/z/my-project/download/qa/round10-*`.
+
+Stage Summary:
+- Project status: STABLE & FEATURE-RICH. The admin dashboard now has CSV export of selected leads + a keyboard-shortcuts help dialog.
+- 0 bugs found this round.
+- 2 new features added: (1) CSV export of selected leads (with enhanced columns including Contacted/Starred/Admin Note), (2) admin `?` help dialog with all 6 keyboard shortcuts + a bulk-action tip + a header "Help" button.
+- Files modified this round:
+  - `src/app/admin/leads/dashboard.tsx` (+exportSelectedLeadsCsv function, +Export selected button, +enhanced exportLeadsCsv columns, +helpOpen state, +? keyboard handler, +KeyboardShortcutsHelp dialog, +Help button in header)
+- Recommended next-phase priorities (for round 14, if needed):
+  1. Add email notification (Resend/SendGrid) when a new lead is submitted.
+  2. Replace placeholder business details in `src/lib/business-info.ts` with Rick's real info.
+  3. Add a "recent activity" feed showing the latest actions (new lead, marked contacted, deleted).
+  4. Add admin settings page (change password, set notification email, etc.).
+  5. Add lead archiving (soft-delete instead of permanent delete).

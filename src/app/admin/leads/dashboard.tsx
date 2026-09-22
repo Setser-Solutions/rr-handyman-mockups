@@ -948,6 +948,8 @@ export default function AdminLeadsDashboard() {
   // ===== Keyboard navigation state =====
   // Tracks which row is "focused" via J/K for keyboard navigation.
   const [focusedRowIndex, setFocusedRowIndex] = useState<number>(-1);
+  // Help dialog open state (toggled by ? key)
+  const [helpOpen, setHelpOpen] = useState(false);
 
   // Reset the focused row whenever the page or filters change.
   useEffect(() => {
@@ -959,17 +961,25 @@ export default function AdminLeadsDashboard() {
   // K / ArrowUp   → focus previous row
   // Enter         → open detail for the focused row
   // Space         → toggle selection for the focused row
+  // ?             → toggle the keyboard shortcuts help dialog
   // Escape        → clear selection (or close dialogs, handled by Radix)
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      // Skip if user is typing in a form field, or a dialog is open
+      // Skip if user is typing in a form field
       const t = e.target as HTMLElement | null;
       if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable || t.tagName === 'SELECT')) {
         return;
       }
-      // Skip if any dialog is open (detail or bulk confirm)
-      if (detailLead || bulkConfirmOpen || confirmDeleteId) return;
-      // Only handle when on the leads tab
+      // ? toggles the help dialog (works on any tab, even with dialogs open,
+      // except when the help dialog itself is open — then Esc closes it via Radix)
+      if (e.key === '?') {
+        e.preventDefault();
+        setHelpOpen((v) => !v);
+        return;
+      }
+      // Skip if any dialog is open (detail or bulk confirm) or help is open
+      if (detailLead || bulkConfirmOpen || confirmDeleteId || helpOpen) return;
+      // Only handle row navigation when on the leads tab
       if (tab !== 'leads') return;
 
       const max = paginatedLeads.length;
@@ -996,7 +1006,7 @@ export default function AdminLeadsDashboard() {
     }
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [paginatedLeads, focusedRowIndex, openDetail, toggleSelectOne, clearSelection, selectedIds, tab, detailLead, bulkConfirmOpen, confirmDeleteId]);
+  }, [paginatedLeads, focusedRowIndex, openDetail, toggleSelectOne, clearSelection, selectedIds, tab, detailLead, bulkConfirmOpen, confirmDeleteId, helpOpen]);
 
   // Grouped feedback by design
   const groupedFeedback = useMemo(() => {
@@ -1016,7 +1026,7 @@ export default function AdminLeadsDashboard() {
   // CSV exports
   const exportLeadsCsv = useCallback(() => {
     const rows: string[][] = [
-      ['Date', 'Name', 'Phone', 'Email', 'Service', 'Design', 'Estimate', 'Message'],
+      ['Date', 'Name', 'Phone', 'Email', 'Service', 'Design', 'Estimate', 'Message', 'Contacted', 'Starred', 'Admin Note'],
     ];
     for (const l of filteredLeads) {
       rows.push([
@@ -1028,10 +1038,38 @@ export default function AdminLeadsDashboard() {
         l.design ?? '',
         l.estimate ?? '',
         l.message ?? '',
+        l.contacted ? 'Yes' : 'No',
+        l.starred ? 'Yes' : 'No',
+        l.adminNote ?? '',
       ]);
     }
     downloadCsv(`rr-handyman-leads-${todayStamp()}.csv`, rows);
   }, [filteredLeads]);
+
+  // Export ONLY the selected leads (complements bulk selection).
+  const exportSelectedLeadsCsv = useCallback(() => {
+    const selected = leads.filter((l) => selectedIds.has(l.id));
+    if (selected.length === 0) return;
+    const rows: string[][] = [
+      ['Date', 'Name', 'Phone', 'Email', 'Service', 'Design', 'Estimate', 'Message', 'Contacted', 'Starred', 'Admin Note'],
+    ];
+    for (const l of selected) {
+      rows.push([
+        formatDateTime(l.createdAt),
+        l.name,
+        l.phone,
+        l.email ?? '',
+        l.service ?? '',
+        l.design ?? '',
+        l.estimate ?? '',
+        l.message ?? '',
+        l.contacted ? 'Yes' : 'No',
+        l.starred ? 'Yes' : 'No',
+        l.adminNote ?? '',
+      ]);
+    }
+    downloadCsv(`rr-handyman-selected-leads-${todayStamp()}.csv`, rows);
+  }, [leads, selectedIds]);
 
   const exportFeedbackCsv = useCallback(() => {
     const rows: string[][] = [['Date', 'Design', 'Rating', 'Notes']];
@@ -1116,6 +1154,16 @@ export default function AdminLeadsDashboard() {
                 <ArrowLeft className="size-4" />
                 <span className="hidden sm:inline">View site</span>
               </Link>
+            </Button>
+            <Button
+              onClick={() => setHelpOpen(true)}
+              variant="ghost"
+              size="sm"
+              className="text-stone-600 hover:bg-stone-100 hover:text-stone-900"
+              title="Keyboard shortcuts (press ?)"
+            >
+              <span className="text-sm font-bold">?</span>
+              <span className="hidden sm:inline">Help</span>
             </Button>
             <Button
               onClick={logout}
@@ -1592,6 +1640,15 @@ export default function AdminLeadsDashboard() {
                         >
                           <Trash2 className="size-3.5" />
                           Delete all
+                        </button>
+                        <button
+                          type="button"
+                          onClick={exportSelectedLeadsCsv}
+                          className="inline-flex items-center gap-1.5 rounded-md border border-stone-200 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 transition-colors hover:bg-stone-100"
+                          title="Export only the selected leads as CSV"
+                        >
+                          <Download className="size-3.5" />
+                          Export selected
                         </button>
                         <button
                           type="button"
@@ -2300,6 +2357,53 @@ export default function AdminLeadsDashboard() {
                 </>
               )}
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ===== Keyboard shortcuts help dialog (toggle with ?) ===== */}
+      <Dialog open={helpOpen} onOpenChange={setHelpOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <span className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-stone-900 text-sm font-bold text-amber-400">
+                ?
+              </span>
+              Keyboard shortcuts
+            </DialogTitle>
+            <DialogDescription>
+              Use these keys to navigate the leads table faster. Shortcuts are
+              disabled when typing in a form field or when a dialog is open.
+            </DialogDescription>
+          </DialogHeader>
+          <dl className="space-y-2 pt-2">
+            {[
+              { keys: ['J', '↓'], desc: 'Focus the next lead row' },
+              { keys: ['K', '↑'], desc: 'Focus the previous lead row' },
+              { keys: ['Enter'], desc: 'Open the focused lead\u2019s detail dialog' },
+              { keys: ['Space'], desc: 'Toggle selection of the focused lead' },
+              { keys: ['Esc'], desc: 'Clear the current selection' },
+              { keys: ['?'], desc: 'Open / close this help dialog' },
+            ].map((s) => (
+              <div key={s.keys.join('')} className="flex items-center justify-between gap-4">
+                <dt className="flex items-center gap-1">
+                  {s.keys.map((k) => (
+                    <kbd
+                      key={k}
+                      className="rounded-md border border-stone-300 bg-stone-100 px-2 py-1 text-xs font-mono font-semibold text-stone-700 shadow-sm"
+                    >
+                      {k}
+                    </kbd>
+                  ))}
+                </dt>
+                <dd className="text-sm text-stone-600 text-right">{s.desc}</dd>
+              </div>
+            ))}
+          </dl>
+          <div className="mt-4 rounded-lg border border-stone-200 bg-stone-50 p-3 text-xs text-stone-500">
+            Tip: Use the checkbox in the header to select all leads on the
+            current page, then use the bulk-action bar to mark them all
+            contacted or export just the selected ones.
           </div>
         </DialogContent>
       </Dialog>
