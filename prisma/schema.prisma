@@ -49,6 +49,8 @@ model Lead {
   // Admin workflow: whether Rick has contacted this lead yet + when.
   contacted Boolean  @default(false)
   contactedAt DateTime?
+  // Star/important flag for leads Rick wants to prioritize.
+  starred   Boolean  @default(false)
   // Soft-notes the admin can attach (e.g. "Left voicemail, trying again Tues").
   adminNote String?
   createdAt DateTime @default(now())

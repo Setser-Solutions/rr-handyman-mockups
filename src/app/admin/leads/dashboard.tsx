@@ -7,6 +7,8 @@ import {
   AlertCircle,
   ArrowLeft,
   CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
   Clock,
   Download,
   Filter,
@@ -61,6 +63,7 @@ interface Lead {
   estimate: string | null;
   contacted: boolean | null;
   contactedAt: string | null;
+  starred: boolean | null;
   adminNote: string | null;
   createdAt: string;
 }
@@ -311,6 +314,15 @@ export default function AdminLeadsDashboard() {
   const [search, setSearch] = useState('');
   const [designFilter, setDesignFilter] = useState<DesignFilter>('all');
   const [serviceFilter, setServiceFilter] = useState<ServiceFilter>('all');
+  const [starredOnly, setStarredOnly] = useState(false);
+
+  // Date-range filter state (optional; null = no date filter)
+  const [dateFrom, setDateFrom] = useState<string>('');
+  const [dateTo, setDateTo] = useState<string>('');
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
 
   const inFlightRef = useRef(false);
   // Track the set of lead IDs we've already seen, so auto-refresh can
@@ -443,6 +455,36 @@ export default function AdminLeadsDashboard() {
     }
   }, []);
 
+  // Toggle the star/important flag on a lead.
+  const toggleStarred = useCallback(async (id: string, next: boolean) => {
+    setLeads((prev) =>
+      prev.map((l) => (l.id === id ? { ...l, starred: next } : l)),
+    );
+    setDetailLead((prev) =>
+      prev && prev.id === id ? { ...prev, starred: next } : prev,
+    );
+    try {
+      const res = await fetch(`/api/leads/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ starred: next }),
+      });
+      if (res.status === 401) {
+        window.location.href = '/admin/login';
+        return;
+      }
+      if (!res.ok) {
+        setLeads((prev) =>
+          prev.map((l) => (l.id === id ? { ...l, starred: !next } : l)),
+        );
+      }
+    } catch {
+      setLeads((prev) =>
+        prev.map((l) => (l.id === id ? { ...l, starred: !next } : l)),
+      );
+    }
+  }, []);
+
   const deleteLead = useCallback(
     async (id: string) => {
       // Remove optimistically
@@ -514,6 +556,7 @@ export default function AdminLeadsDashboard() {
       }
     }
     const contactedCount = leads.filter((l) => l.contacted).length;
+    const starredCount = leads.filter((l) => l.starred).length;
     const conversionRate = totalLeads > 0 ? Math.round((contactedCount / totalLeads) * 100) : 0;
     const totalFeedback = feedback.length;
     const avgRating =
@@ -550,6 +593,7 @@ export default function AdminLeadsDashboard() {
       totalLeads,
       byDesign,
       contactedCount,
+      starredCount,
       conversionRate,
       totalFeedback,
       avgRating,
@@ -561,10 +605,13 @@ export default function AdminLeadsDashboard() {
   // Chart range state (7d / 30d toggle)
   const [chartRange, setChartRange] = useState<'7d' | '30d'>('7d');
 
-  // Filtered leads
+  // Filtered leads (search + design + service + date-range + starred)
   const filteredLeads = useMemo(() => {
     const q = search.trim().toLowerCase();
+    const fromTime = dateFrom ? new Date(dateFrom + 'T00:00:00').getTime() : null;
+    const toTime = dateTo ? new Date(dateTo + 'T23:59:59').getTime() : null;
     return leads.filter((l) => {
+      if (starredOnly && !l.starred) return false;
       if (designFilter !== 'all' && l.design !== designFilter) return false;
       if (serviceFilter !== 'all') {
         const ns = normalizeService(l.service);
@@ -576,9 +623,27 @@ export default function AdminLeadsDashboard() {
         const hay = `${l.name} ${l.phone} ${l.email ?? ''} ${l.message ?? ''}`.toLowerCase();
         if (!hay.includes(q)) return false;
       }
+      if (fromTime || toTime) {
+        const t = new Date(l.createdAt).getTime();
+        if (fromTime && t < fromTime) return false;
+        if (toTime && t > toTime) return false;
+      }
       return true;
     });
-  }, [leads, search, designFilter, serviceFilter]);
+  }, [leads, search, designFilter, serviceFilter, dateFrom, dateTo, starredOnly]);
+
+  // Reset to page 1 whenever filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, designFilter, serviceFilter, dateFrom, dateTo, starredOnly]);
+
+  // Paginate the filtered leads
+  const totalPages = Math.max(1, Math.ceil(filteredLeads.length / pageSize));
+  const safePage = Math.min(currentPage, totalPages);
+  const paginatedLeads = useMemo(() => {
+    const start = (safePage - 1) * pageSize;
+    return filteredLeads.slice(start, start + pageSize);
+  }, [filteredLeads, safePage]);
 
   // Grouped feedback by design
   const groupedFeedback = useMemo(() => {
@@ -963,11 +1028,26 @@ export default function AdminLeadsDashboard() {
                         Filter leads
                       </CardTitle>
                       <p className="mt-1 text-xs text-stone-500">
-                        Showing{' '}
-                        <span className="font-medium text-stone-700">
-                          {filteredLeads.length}
-                        </span>{' '}
-                        of {stats.totalLeads} leads
+                        {filteredLeads.length > pageSize ? (
+                          <>
+                            Showing{' '}
+                            <span className="font-medium text-stone-700">
+                              {(safePage - 1) * pageSize + 1}–
+                              {Math.min(safePage * pageSize, filteredLeads.length)}
+                            </span>{' '}
+                            of <span className="font-medium text-stone-700">{filteredLeads.length}</span>
+                            {filteredLeads.length !== stats.totalLeads && ' (filtered)'}
+                          </>
+                        ) : (
+                          <>
+                            Showing{' '}
+                            <span className="font-medium text-stone-700">
+                              {filteredLeads.length}
+                            </span>{' '}
+                            of {stats.totalLeads} leads
+                            {filteredLeads.length !== stats.totalLeads && ' (filtered)'}
+                          </>
+                        )}
                       </p>
                     </div>
                     <Button
@@ -994,7 +1074,16 @@ export default function AdminLeadsDashboard() {
                   </div>
 
                   <div className="mt-3 flex flex-wrap items-center gap-2">
-                    <span className="mr-1 self-center text-xs font-medium text-stone-500">
+                    {/* Starred filter toggle */}
+                    <FilterPill
+                      active={starredOnly}
+                      onClick={() => setStarredOnly((v) => !v)}
+                      label="Show only starred leads"
+                    >
+                      <Star className={cn('size-3', starredOnly && 'fill-amber-400 text-amber-500')} />
+                      {starredOnly ? 'Starred only' : 'Starred'}
+                    </FilterPill>
+                    <span className="mx-1 self-center text-xs font-medium text-stone-500">
                       Design:
                     </span>
                     <FilterPill
@@ -1037,6 +1126,56 @@ export default function AdminLeadsDashboard() {
                       </FilterPill>
                     ))}
                   </div>
+
+                  {/* Date-range filter */}
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    <span className="mr-1 self-center text-xs font-medium text-stone-500">
+                      Date:
+                    </span>
+                    <input
+                      type="date"
+                      value={dateFrom}
+                      onChange={(e) => setDateFrom(e.target.value)}
+                      aria-label="Filter from this date"
+                      className="h-8 rounded-md border border-stone-200 bg-stone-50 px-2 text-xs text-stone-700 focus:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-1"
+                    />
+                    <span className="text-xs text-stone-400">to</span>
+                    <input
+                      type="date"
+                      value={dateTo}
+                      onChange={(e) => setDateTo(e.target.value)}
+                      aria-label="Filter to this date"
+                      className="h-8 rounded-md border border-stone-200 bg-stone-50 px-2 text-xs text-stone-700 focus:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-1"
+                    />
+                    {(dateFrom || dateTo) && (
+                      <button
+                        type="button"
+                        onClick={() => { setDateFrom(''); setDateTo(''); }}
+                        className="inline-flex items-center gap-1 rounded-full border border-stone-200 px-2 py-1 text-[11px] text-stone-500 hover:border-stone-400 hover:text-stone-700"
+                      >
+                        <X className="size-3" />
+                        Clear dates
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Active filters summary + clear all */}
+                  {(search || designFilter !== 'all' || serviceFilter !== 'all' || dateFrom || dateTo || starredOnly) && (
+                    <div className="mt-2 flex items-center gap-2 text-xs text-stone-500">
+                      <span>
+                        Showing {filteredLeads.length} of {stats.totalLeads} leads
+                        {filteredLeads.length !== stats.totalLeads && ` (filtered)`}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => { setSearch(''); setDesignFilter('all'); setServiceFilter('all'); setDateFrom(''); setDateTo(''); setStarredOnly(false); }}
+                        className="inline-flex items-center gap-1 rounded-full border border-stone-200 px-2 py-0.5 text-[11px] text-stone-500 hover:border-stone-400 hover:text-stone-700"
+                      >
+                        <X className="size-3" />
+                        Clear all
+                      </button>
+                    </div>
+                  )}
                 </CardHeader>
 
                 <CardContent className="p-0">
@@ -1113,7 +1252,7 @@ export default function AdminLeadsDashboard() {
                           </tr>
                         </thead>
                         <tbody>
-                          {filteredLeads.map((lead) => {
+                          {paginatedLeads.map((lead) => {
                             const meta = getDesignMeta(lead.design);
                             return (
                               <tr
@@ -1131,6 +1270,12 @@ export default function AdminLeadsDashboard() {
                                 </td>
                                 <td className="whitespace-nowrap px-4 py-3 font-medium text-stone-900">
                                   <div className="flex items-center gap-2">
+                                    {lead.starred && (
+                                      <Star
+                                        className="size-3.5 fill-amber-400 text-amber-500"
+                                        aria-label="Starred"
+                                      />
+                                    )}
                                     {lead.name}
                                     {lead.contacted && (
                                       <CheckCircle2
@@ -1208,6 +1353,23 @@ export default function AdminLeadsDashboard() {
                                       type="button"
                                       onClick={(e) => {
                                         e.stopPropagation();
+                                        void toggleStarred(lead.id, !lead.starred);
+                                      }}
+                                      title={lead.starred ? 'Remove star' : 'Star this lead'}
+                                      aria-label={lead.starred ? 'Remove star' : 'Star this lead'}
+                                      className={cn(
+                                        'rounded p-1.5 transition-colors',
+                                        lead.starred
+                                          ? 'text-amber-500 hover:bg-amber-50'
+                                          : 'text-stone-300 hover:bg-stone-100 hover:text-amber-500',
+                                      )}
+                                    >
+                                      <Star className={cn('size-4', lead.starred && 'fill-amber-400')} />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
                                         void toggleContacted(lead.id, !lead.contacted);
                                       }}
                                       title={lead.contacted ? 'Mark as not contacted' : 'Mark as contacted'}
@@ -1240,6 +1402,76 @@ export default function AdminLeadsDashboard() {
                           })}
                         </tbody>
                       </table>
+                    </div>
+                  )}
+
+                  {/* Pagination controls */}
+                  {filteredLeads.length > pageSize && (
+                    <div className="flex items-center justify-between gap-3 border-t border-stone-100 px-4 py-3">
+                      <p className="text-xs text-stone-500">
+                        Page <span className="font-medium text-stone-700">{safePage}</span> of{' '}
+                        <span className="font-medium text-stone-700">{totalPages}</span>
+                        <span className="hidden sm:inline">
+                          {' '}· {filteredLeads.length} leads total
+                        </span>
+                      </p>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                          disabled={safePage <= 1}
+                          className="inline-flex h-8 items-center gap-1 rounded-md border border-stone-200 px-3 text-xs font-medium text-stone-700 transition-colors hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
+                          aria-label="Previous page"
+                        >
+                          <ChevronLeft className="size-3.5" />
+                          <span className="hidden sm:inline">Prev</span>
+                        </button>
+                        {/* Page number pills (show up to 5 around current) */}
+                        {Array.from({ length: totalPages }).map((_, i) => {
+                          const p = i + 1;
+                          // Show first, last, and ±1 around current
+                          if (
+                            p !== 1 &&
+                            p !== totalPages &&
+                            (p < safePage - 1 || p > safePage + 1)
+                          ) {
+                            if (p === 2 || p === totalPages - 1) {
+                              return (
+                                <span key={p} className="px-1 text-xs text-stone-300">
+                                  …
+                                </span>
+                              );
+                            }
+                            return null;
+                          }
+                          return (
+                            <button
+                              key={p}
+                              type="button"
+                              onClick={() => setCurrentPage(p)}
+                              aria-current={p === safePage ? 'page' : undefined}
+                              className={cn(
+                                'inline-flex h-8 min-w-8 items-center justify-center rounded-md border px-2 text-xs font-medium transition-colors',
+                                p === safePage
+                                  ? 'border-stone-900 bg-stone-900 text-white'
+                                  : 'border-stone-200 text-stone-700 hover:bg-stone-100',
+                              )}
+                            >
+                              {p}
+                            </button>
+                          );
+                        })}
+                        <button
+                          type="button"
+                          onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                          disabled={safePage >= totalPages}
+                          className="inline-flex h-8 items-center gap-1 rounded-md border border-stone-200 px-3 text-xs font-medium text-stone-700 transition-colors hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
+                          aria-label="Next page"
+                        >
+                          <span className="hidden sm:inline">Next</span>
+                          <ChevronRight className="size-3.5" />
+                        </button>
+                      </div>
                     </div>
                   )}
                 </CardContent>
@@ -1383,6 +1615,9 @@ export default function AdminLeadsDashboard() {
             <>
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2 pr-8">
+                  {detailLead.starred && (
+                    <Star className="size-4 shrink-0 fill-amber-400 text-amber-500" aria-label="Starred" />
+                  )}
                   <span className="truncate">{detailLead.name}</span>
                   {detailLead.contacted ? (
                     <Badge className="bg-emerald-100 text-emerald-700">
@@ -1475,6 +1710,16 @@ export default function AdminLeadsDashboard() {
               </div>
 
               <DialogFooter className="gap-2 sm:gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => void toggleStarred(detailLead.id, !detailLead.starred)}
+                  className={detailLead.starred ? 'text-amber-600 hover:bg-amber-50' : 'text-stone-600 hover:bg-stone-100'}
+                  title={detailLead.starred ? 'Remove star' : 'Star this lead'}
+                >
+                  <Star className={cn('size-4', detailLead.starred && 'fill-amber-400')} />
+                  {detailLead.starred ? 'Starred' : 'Star'}
+                </Button>
                 <Button
                   variant="outline"
                   size="sm"

@@ -154,6 +154,7 @@ export async function GET(req: NextRequest) {
         estimate: true,
         contacted: true,
         contactedAt: true,
+        starred: true,
         adminNote: true,
         createdAt: true,
       },

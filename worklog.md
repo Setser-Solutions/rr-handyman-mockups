@@ -542,3 +542,71 @@ Stage Summary:
   3. Add pagination to the admin dashboard (currently shows last 50 leads).
   4. Add lead search by date range.
   5. Add a "star/important" flag on leads (in addition to "contacted").
+
+---
+Task ID: 9
+Agent: webDevReview (cron round 6)
+Task: Scheduled webDevReview pass #6 — QA the live site, confirm round-8 bug fix holds, then add admin pagination, date-range filter, and star/important lead flag.
+
+Work Log:
+- Read worklog.md (rounds 0–8). Round 8 fixed a critical lead-submission bug (service normalization) and added 7d/30d chart, new-lead toast, and print view. Recommended next-phase priorities were: email notifications, real business info, pagination, date-range search, star/important flag.
+- QA via agent-browser: console clean, all 3 designs switch correctly, admin auth flow works (login → redirect → dashboard loads with 15 leads), lead form submission with service selected → 201 + persisted (round-8 bug fix confirmed holding). No new bugs found.
+- Selected focus for this round: admin pagination + date-range filter + star/important flag (the three most practical admin enhancements from the recommended priorities).
+
+NEW FEATURES:
+1. **Pagination** for the leads table (dashboard.tsx):
+   - Added `currentPage` state + `pageSize = 10`. Leads are sliced into pages of 10.
+   - Added pagination controls below the table: "Page X of Y · N leads total" text + Prev/Next buttons + page-number pills (1, …, current-1, current, current+1, …, last) with ellipsis for large page counts.
+   - Current page is highlighted (dark bg). Prev/Next buttons are disabled at the boundaries.
+   - Page resets to 1 whenever any filter changes (search, design, service, date, starred).
+   - Updated the "Showing X of Y leads" header text to show the visible range (e.g. "Showing 1–10 of 15") when paginated.
+   - Verified: with 15 leads, page 1 shows 1–10, clicking Next shows 11–15 (5 rows), clicking Prev returns to 1–10.
+2. **Date-range filter** for leads (dashboard.tsx):
+   - Added `dateFrom` + `dateTo` state (native `<input type="date">` fields).
+   - Added a "Date:" row in the filter section with two date inputs + a "Clear dates" button (visible only when a date is set).
+   - The `filteredLeads` useMemo now filters by `createdAt` falling within [dateFrom 00:00, dateTo 23:59].
+   - The "Clear all" button now also clears date filters.
+   - Verified: date inputs render; the filter logic correctly includes/excludes leads by date (tested via code inspection + the React state updates on native date-picker interaction).
+3. **Star/important flag** on leads (schema + API + dashboard):
+   - Added `starred Boolean @default(false)` to the Lead Prisma model. Pushed schema (no force-reset needed since the field has a default).
+   - Updated `GET /api/leads` to return `starred` in the select.
+   - Updated `PATCH /api/leads/[id]` to accept `{ starred: boolean }` and return the updated lead with `starred`.
+   - Added `starred` to the Lead type in the dashboard.
+   - Added `toggleStarred(id, next)` function (optimistic update + PATCH API, with revert on failure + 401 redirect).
+   - Added a **Star button** to each table row's Actions column (before the Contacted button). Filled amber star when starred, outline star when not.
+   - Added a **star icon** next to the lead name in the table (amber filled star for starred leads, before the name).
+   - Added a **star icon** in the detail dialog header (amber filled star for starred leads).
+   - Added a **"Star"/"Starred" button** to the detail dialog footer (toggles the star).
+   - Added a **"Starred" filter pill** in the filter section (toggles `starredOnly` state — shows only starred leads when active). The pill has a star icon that fills amber when active.
+   - Added `starredCount` to the stats (available for future use).
+   - Verified end-to-end: starred a lead via UI → star icon appeared → clicked "Starred" filter → showed 2 starred leads → cleared filter → back to all leads. API confirmed 2 leads have `starred=True` in DB.
+
+STYLING POLISH:
+- Pagination buttons use consistent h-8 sizing + disabled states (opacity-40 + cursor-not-allowed).
+- Page-number pills use dark bg when active, outline when inactive.
+- Star icon uses `fill-amber-400` when starred (solid star) vs outline when not — matches the "important" semantic.
+- Date inputs use `h-8` + stone-50 bg + focus ring, matching the existing filter pill aesthetic.
+- "Clear dates" and "Clear all" buttons use small border + X icon for discoverability.
+
+VERIFICATION:
+- `bun run lint` — clean (0 errors, 0 warnings).
+- agent-browser QA: console clean, admin login works, dashboard loads with 15 leads, pagination shows "1–10 of 15" + Prev/Next + page pills, Next→page 2 shows 5 rows, Prev→back to page 1, star buttons visible on all rows, starring a lead persists (verified via API), starred filter shows only starred leads, "Clear all" resets all filters.
+- API verification: `PATCH /api/leads/[id]` with `{ starred: true }` → 200, lead updated with `starred: true`. `GET /api/leads` returns `starred` field.
+- DB state at end of round: 15 leads, 2 starred.
+- QA screenshots saved under `/home/z/my-project/download/qa/round6-*`.
+
+Stage Summary:
+- Project status: STABLE & FEATURE-RICH. The admin dashboard is now a full lead-management CRM.
+- 0 bugs found this round (round-8 bug fix confirmed holding).
+- 3 new features added: (1) pagination (10 per page) with page-number pills + Prev/Next, (2) date-range filter with native date inputs + clear buttons, (3) star/important flag with toggle button + filter + visual indicators in table + detail dialog.
+- Files created/modified this round:
+  - `prisma/schema.prisma` (+starred Boolean field on Lead)
+  - `src/app/api/leads/route.ts` (GET returns starred)
+  - `src/app/api/leads/[id]/route.ts` (PATCH accepts + returns starred)
+  - `src/app/admin/leads/dashboard.tsx` (+pagination, +date-range filter, +star toggle/filter/icons, +Star/ChevronLeft/ChevronRight icon imports, +toggleStarred function, +starredOnly state, +starredCount stat)
+- Recommended next-phase priorities (for round 10, if needed):
+  1. Add email notification (Resend/SendGrid) when a new lead is submitted.
+  2. Replace placeholder business details in `src/lib/business-info.ts` with Rick's real info.
+  3. Add bulk actions (select multiple leads → mark all contacted / delete all / export selected).
+  4. Add a "leads by service" pie/donut chart in the admin stats.
+  5. Add keyboard shortcuts in the admin (e.g. J/K to navigate rows, Enter to open detail).

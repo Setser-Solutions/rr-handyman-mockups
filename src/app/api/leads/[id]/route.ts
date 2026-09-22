@@ -19,10 +19,13 @@ export async function PATCH(
       return NextResponse.json({ ok: false, error: 'Invalid JSON body' }, { status: 400 });
     }
 
-    const data: { contacted?: boolean; contactedAt?: Date | null; adminNote?: string } = {};
+    const data: { contacted?: boolean; contactedAt?: Date | null; adminNote?: string; starred?: boolean } = {};
     if (typeof body.contacted === 'boolean') {
       data.contacted = body.contacted;
       data.contactedAt = body.contacted ? new Date() : null;
+    }
+    if (typeof body.starred === 'boolean') {
+      data.starred = body.starred;
     }
     if (typeof body.adminNote === 'string') {
       data.adminNote = body.adminNote.slice(0, 1000);
@@ -46,6 +49,7 @@ export async function PATCH(
         estimate: true,
         contacted: true,
         contactedAt: true,
+        starred: true,
         adminNote: true,
         createdAt: true,
       },
