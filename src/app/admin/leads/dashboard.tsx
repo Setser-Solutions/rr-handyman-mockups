@@ -332,6 +332,107 @@ function ServiceDonut({
   );
 }
 
+// ----- Design donut chart (pure SVG, no deps) -----
+// Same visual approach as ServiceDonut but for the 3 design variants.
+const DESIGN_COLORS: Record<DesignKey, string> = {
+  modern: '#f59e0b',    // amber-500
+  portfolio: '#10b981', // emerald-500
+  trusted: '#f97316',   // orange-500
+};
+
+function DesignDonut({
+  byDesign,
+  total,
+}: {
+  byDesign: Record<DesignKey, number>;
+  total: number;
+}) {
+  const entries = (Object.keys(byDesign) as DesignKey[])
+    .map((k) => ({ key: k, label: DESIGN_META[k].label, count: byDesign[k] }))
+    .filter((e) => e.count > 0);
+
+  if (entries.length === 0 || total === 0) {
+    return (
+      <div className="mt-4 flex items-center justify-center py-6 text-xs text-stone-400">
+        No leads yet
+      </div>
+    );
+  }
+
+  const radius = 38;
+  const circumference = 2 * Math.PI * radius;
+
+  const slices = entries.reduce<
+    { key: DesignKey; label: string; count: number; color: string; dash: number; offset: number; pct: number }[]
+  >((acc, e) => {
+    const fraction = e.count / total;
+    const dash = fraction * circumference;
+    const prevOffset = acc.length > 0 ? acc[acc.length - 1].offset + acc[acc.length - 1].dash : 0;
+    acc.push({
+      key: e.key,
+      label: e.label,
+      count: e.count,
+      color: DESIGN_COLORS[e.key],
+      dash,
+      offset: prevOffset,
+      pct: Math.round(fraction * 100),
+    });
+    return acc;
+  }, []);
+
+  return (
+    <div className="mt-4 flex items-center gap-4">
+      <svg
+        width="100"
+        height="100"
+        viewBox="0 0 100 100"
+        className="shrink-0"
+        role="img"
+        aria-label={`Leads by design: ${entries.map((e) => `${e.label} ${e.count}`).join(', ')}`}
+      >
+        <circle cx="50" cy="50" r={radius} fill="none" stroke="#f5f5f4" strokeWidth="14" />
+        {slices.map((s) => (
+          <circle
+            key={s.key}
+            cx="50"
+            cy="50"
+            r={radius}
+            fill="none"
+            stroke={s.color}
+            strokeWidth="14"
+            strokeDasharray={`${s.dash} ${circumference - s.dash}`}
+            strokeDashoffset={-s.offset}
+            transform="rotate(-90 50 50)"
+            style={{ transition: 'stroke-dasharray 0.3s ease' }}
+          >
+            <title>{`${s.label}: ${s.count} (${s.pct}%)`}</title>
+          </circle>
+        ))}
+        <text x="50" y="46" textAnchor="middle" className="fill-stone-900" style={{ fontSize: '18px', fontWeight: 700 }}>
+          {total}
+        </text>
+        <text x="50" y="60" textAnchor="middle" className="fill-stone-400" style={{ fontSize: '8px', fontWeight: 500 }}>
+          leads
+        </text>
+      </svg>
+      <div className="flex-1 space-y-1.5">
+        {slices.map((s) => (
+          <div key={s.key} className="flex items-center justify-between gap-2 text-xs">
+            <span className="flex items-center gap-1.5 text-stone-700">
+              <span className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: s.color }} aria-hidden />
+              {s.label}
+            </span>
+            <span className="font-medium text-stone-900">
+              {s.count}
+              <span className="ml-1 text-stone-400">({s.pct}%)</span>
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ----- Small presentational components -----
 
 function StatCard({
@@ -844,6 +945,59 @@ export default function AdminLeadsDashboard() {
     await fetchData();
   }, [bulkAction, selectedIds, clearSelection, fetchData]);
 
+  // ===== Keyboard navigation state =====
+  // Tracks which row is "focused" via J/K for keyboard navigation.
+  const [focusedRowIndex, setFocusedRowIndex] = useState<number>(-1);
+
+  // Reset the focused row whenever the page or filters change.
+  useEffect(() => {
+    setFocusedRowIndex(-1);
+  }, [search, designFilter, serviceFilter, dateFrom, dateTo, starredOnly, safePage]);
+
+  // ===== Keyboard shortcuts =====
+  // J / ArrowDown → focus next row
+  // K / ArrowUp   → focus previous row
+  // Enter         → open detail for the focused row
+  // Space         → toggle selection for the focused row
+  // Escape        → clear selection (or close dialogs, handled by Radix)
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      // Skip if user is typing in a form field, or a dialog is open
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable || t.tagName === 'SELECT')) {
+        return;
+      }
+      // Skip if any dialog is open (detail or bulk confirm)
+      if (detailLead || bulkConfirmOpen || confirmDeleteId) return;
+      // Only handle when on the leads tab
+      if (tab !== 'leads') return;
+
+      const max = paginatedLeads.length;
+      if (max === 0) return;
+
+      if (e.key === 'j' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        setFocusedRowIndex((prev) => Math.min(max - 1, prev + 1));
+      } else if (e.key === 'k' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        setFocusedRowIndex((prev) => Math.max(0, prev - 1));
+      } else if (e.key === 'Enter' && focusedRowIndex >= 0 && focusedRowIndex < max) {
+        e.preventDefault();
+        openDetail(paginatedLeads[focusedRowIndex]);
+      } else if (e.key === ' ' && focusedRowIndex >= 0 && focusedRowIndex < max) {
+        e.preventDefault();
+        toggleSelectOne(paginatedLeads[focusedRowIndex].id);
+      } else if (e.key === 'Escape') {
+        if (selectedIds.size > 0) {
+          e.preventDefault();
+          clearSelection();
+        }
+      }
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [paginatedLeads, focusedRowIndex, openDetail, toggleSelectOne, clearSelection, selectedIds, tab, detailLead, bulkConfirmOpen, confirmDeleteId]);
+
   // Grouped feedback by design
   const groupedFeedback = useMemo(() => {
     const groups: Record<DesignKey, FeedbackItem[]> = {
@@ -1175,6 +1329,17 @@ export default function AdminLeadsDashboard() {
                   <ServiceDonut byService={stats.byService} total={stats.totalLeads} />
                 </CardContent>
               </Card>
+
+              {/* Leads by design donut chart */}
+              <Card className="border-stone-200 bg-white shadow-sm">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-medium text-stone-500">By design</p>
+                    <TrendingUp className="size-4 text-stone-400" />
+                  </div>
+                  <DesignDonut byDesign={stats.byDesign} total={stats.totalLeads} />
+                </CardContent>
+              </Card>
             </>
           )}
         </section>
@@ -1258,6 +1423,14 @@ export default function AdminLeadsDashboard() {
                             {filteredLeads.length !== stats.totalLeads && ' (filtered)'}
                           </>
                         )}
+                      </p>
+                      <p className="mt-0.5 hidden text-[10px] text-stone-400 sm:block">
+                        Keyboard:{' '}
+                        <kbd className="rounded border border-stone-200 bg-stone-100 px-1 font-mono text-stone-500">J</kbd>
+                        {'/'}
+                        <kbd className="rounded border border-stone-200 bg-stone-100 px-1 font-mono text-stone-500">K</kbd> navigate ·{' '}
+                        <kbd className="rounded border border-stone-200 bg-stone-100 px-1 font-mono text-stone-500">Enter</kbd> open ·{' '}
+                        <kbd className="rounded border border-stone-200 bg-stone-100 px-1 font-mono text-stone-500">Space</kbd> select
                       </p>
                     </div>
                     <Button
@@ -1515,9 +1688,10 @@ export default function AdminLeadsDashboard() {
                           </tr>
                         </thead>
                         <tbody>
-                          {paginatedLeads.map((lead) => {
+                          {paginatedLeads.map((lead, rowIdx) => {
                             const meta = getDesignMeta(lead.design);
                             const isSelected = selectedIds.has(lead.id);
+                            const isFocused = rowIdx === focusedRowIndex;
                             return (
                               <tr
                                 key={lead.id}
@@ -1525,6 +1699,7 @@ export default function AdminLeadsDashboard() {
                                 className={cn(
                                   'cursor-pointer border-b border-stone-100 transition-colors hover:bg-amber-50/40',
                                   isSelected && 'bg-amber-50/60',
+                                  isFocused && 'ring-2 ring-inset ring-stone-900/20 bg-amber-50/30',
                                 )}
                               >
                                 <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>

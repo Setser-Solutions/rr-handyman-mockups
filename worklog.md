@@ -723,3 +723,60 @@ Stage Summary:
   3. Add keyboard shortcuts in the admin (J/K to navigate rows, Enter to open detail, Space to select).
   4. Add a "leads by design" donut or bar chart (complementing the by-service one).
   5. Add CSV export of only the selected leads.
+
+---
+Task ID: 12
+Agent: webDevReview (cron round 9)
+Task: Scheduled webDevReview pass #9 — QA the live site, then add keyboard shortcuts (J/K/Enter/Space) and a "Leads by design" donut chart to the admin dashboard.
+
+Work Log:
+- Read worklog.md (rounds 0–11). Round 11 added bulk actions (select multiple leads + mark all contacted / uncontacted / delete). Recommended next-phase priorities were: email notifications, real business info, keyboard shortcuts, by-design chart, CSV export of selected.
+- QA via agent-browser: console clean, all 3 designs switch, admin auth works, 16 leads loaded, bulk actions work (select-all-on-page → "10 selected" → Clear → "no selection"), both donut charts render, lead form works. No bugs found.
+- Selected focus for this round: keyboard shortcuts + "Leads by design" donut chart (priorities #3 and #4 from the recommended list).
+
+NEW FEATURES:
+1. **Keyboard shortcuts** in the admin leads table (dashboard.tsx):
+   - Added `focusedRowIndex` state to track which row is "focused" via keyboard.
+   - Added a `useEffect` keydown listener (only active on the leads tab, not when typing in form fields, not when a dialog is open) that handles:
+     - **J / ArrowDown** → focus the next row (clamped to the last row)
+     - **K / ArrowUp** → focus the previous row (clamped to row 0)
+     - **Enter** → open the detail dialog for the focused row
+     - **Space** → toggle selection of the focused row
+     - **Escape** → clear the current selection (if any)
+   - The focused row gets a visual indicator: `ring-2 ring-inset ring-stone-900/20 bg-amber-50/30` (a subtle inset ring + light amber background).
+   - The focused row resets to -1 whenever the page or filters change (so the focus doesn't point at a non-existent row after filtering).
+   - Added a keyboard-shortcuts hint line below the "Showing X of Y" text: "Keyboard: J/K navigate · Enter open · Space select" (desktop only, using `<kbd>` elements for the keys).
+   - Verified end-to-end via agent-browser: J → focuses row 1, J again → row 2, K → back to row 1, Space → "1 selected", Enter → "DETAIL OPEN".
+2. **"Leads by design" donut chart** (dashboard.tsx):
+   - Added a `DesignDonut` component (pure SVG, same approach as `ServiceDonut`) showing the breakdown of leads by design variant (Modern / Portfolio / Trusted).
+   - Each slice colored with the design's accent: Modern=amber-500, Portfolio=emerald-500, Trusted=orange-500.
+   - Center shows the total lead count with "leads" label.
+   - Each slice has a tooltip showing "Design: count (percent)".
+   - Legend on the right with colored dots, counts, and percentages.
+   - Added a `DESIGN_COLORS` constant mapping design keys to hex colors.
+   - Added the donut as a 7th stat card in the stats grid (next to the "By service" donut).
+   - Empty state shows "No leads yet".
+   - Verified via VLM: both donuts render — "By service: Plumbing 12 (75%), Carpentry 2 (13%), Power Washing 2 (13%)" and "By design: Modern 13 (81%), Portfolio 1 (6%), Trusted 2 (13%)".
+
+BUG FIXED during implementation:
+- The initial `<kbd>J</kbd>/<{' '}` JSX caused a parsing error ("Identifier expected") because the `/` after `</kbd>` was parsed as a self-closing tag. Fixed by wrapping the `/` in curly braces: `<kbd>J</kbd>{'/'}`.
+
+VERIFICATION:
+- `bun run lint` — clean (0 errors, 0 warnings).
+- agent-browser QA: console clean, both donut charts render with correct data, keyboard hint visible, keyboard shortcuts work (J/K navigation, Space to select, Enter to open detail, Escape to clear), public site unaffected.
+- VLM verified: both donuts visible with correct labels + counts + percentages, keyboard hint present.
+- DB state: 16 leads (13 Modern, 1 Portfolio, 2 Trusted; 12 Plumbing, 2 Carpentry, 2 Power Washing; 11 contacted = 69% conversion).
+- QA screenshots saved under `/home/z/my-project/download/qa/round9-*`.
+
+Stage Summary:
+- Project status: STABLE & FEATURE-RICH. The admin dashboard now has keyboard navigation + dual donut charts.
+- 0 bugs found during QA (1 parsing bug found + fixed during implementation).
+- 2 new features added: (1) keyboard shortcuts (J/K/Enter/Space/Escape) with visual focus indicator + hint line, (2) "Leads by design" donut chart complementing the by-service one.
+- Files modified this round:
+  - `src/app/admin/leads/dashboard.tsx` (+focusedRowIndex state, +keydown useEffect, +focused row ring, +keyboard hint, +DesignDonut component, +DESIGN_COLORS, +By design card in stats, +parsing bug fix)
+- Recommended next-phase priorities (for round 13, if needed):
+  1. Add email notification (Resend/SendGrid) when a new lead is submitted.
+  2. Replace placeholder business details in `src/lib/business-info.ts` with Rick's real info.
+  3. Add CSV export of only the selected leads (complement to bulk actions).
+  4. Add a "help" dialog in the admin showing all keyboard shortcuts (like the `?` dialog on the public site).
+  5. Add a "recent activity" feed showing the latest actions (new lead, marked contacted, deleted).
