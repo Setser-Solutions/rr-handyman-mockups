@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type FormEvent, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { motion, type Variants } from 'framer-motion';
 import {
   Droplets,
@@ -19,15 +19,16 @@ import {
   Calendar,
   Send,
   Smile,
+  Loader2,
   type LucideIcon,
 } from 'lucide-react';
-import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useLeadForm } from '@/hooks/use-lead-form';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
@@ -802,14 +803,12 @@ function TrustBand() {
 function LeadForm() {
   const [formKey, setFormKey] = useState(0);
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    toast.success('Got it — Rick will call you back within 24 hours.', {
-      description: 'For emergencies, call (555) 014-2837 directly.',
-    });
-    e.currentTarget.reset();
-    setFormKey((k) => k + 1);
-  }
+  const { submit: handleSubmit, submitting } = useLeadForm({
+    design: 'trusted',
+    successTitle: 'Got it — Rick will call you back within 24 hours.',
+    successDescription: 'For emergencies, call (555) 014-2837 directly.',
+    onAfterSubmit: () => setFormKey((k) => k + 1),
+  });
 
   const contactRows = [
     { icon: Phone, label: 'Call or text', value: BUSINESS.phone, href: BUSINESS.phoneHref },
@@ -967,10 +966,20 @@ function LeadForm() {
                 <Button
                   type="submit"
                   size="lg"
-                  className="w-full bg-orange-600 text-stone-50 hover:bg-orange-700"
+                  disabled={submitting}
+                  className="w-full bg-orange-600 text-stone-50 hover:bg-orange-700 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  <Send className="size-4" />
-                  Send Rick a Message
+                  {submitting ? (
+                    <>
+                      <Loader2 className="size-4 animate-spin" />
+                      Sending…
+                    </>
+                  ) : (
+                    <>
+                      <Send className="size-4" />
+                      Send Rick a Message
+                    </>
+                  )}
                 </Button>
                 <p className="text-center text-xs text-stone-500">
                   By sending, you agree Rick can call or text you back about your project.

@@ -30,3 +30,32 @@ model Post {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+// Lead captures every quote request submitted from any of the 3 mockup
+// designs. The `design` field records which mockup the lead came from so
+// the client can A/B-test which design converts best.
+model Lead {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String
+  email     String?
+  service   String?
+  message   String?
+  design    String?
+  // Optional estimator snapshot so we can see what price range the user
+  // was shown when they submitted (helpful for sales follow-up).
+  estimate  String?
+  ipHash    String?
+  createdAt DateTime @default(now())
+}
+
+// DesignFeedback stores per-design review notes left by the client via the
+// "Design notes" drawer in the mockup switcher. Used to collect the
+// client's preferences before going live with a single design.
+model DesignFeedback {
+  id        String   @id @default(cuid())
+  design    String
+  rating    Int?
+  notes     String
+  createdAt DateTime @default(now())
+}

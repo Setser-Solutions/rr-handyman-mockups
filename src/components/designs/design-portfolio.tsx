@@ -21,12 +21,13 @@ import {
   Camera,
   Images,
   Quote,
+  Loader2,
 } from 'lucide-react';
-import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { useLeadForm } from '@/hooks/use-lead-form';
 import {
   Tabs,
   TabsList,
@@ -142,14 +143,12 @@ export default function DesignPortfolio() {
     scrollToId('gallery');
   }
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    toast.success('Quote request received.', {
-      description: 'Rick will reach out within 24 hours.',
-    });
-    e.currentTarget.reset();
-    setServiceNeeded('');
-  }
+  const { submit: handleSubmit, submitting } = useLeadForm({
+    design: 'portfolio',
+    successTitle: 'Quote request received.',
+    successDescription: 'Rick will reach out within 24 hours.',
+    onAfterSubmit: () => setServiceNeeded(''),
+  });
 
   return (
     <div className="min-h-screen flex flex-col bg-white text-stone-900">
@@ -959,10 +958,20 @@ export default function DesignPortfolio() {
                   <Button
                     type="submit"
                     size="lg"
-                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+                    disabled={submitting}
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-60 disabled:cursor-not-allowed"
                   >
-                    <Send className="size-4" />
-                    Send request
+                    {submitting ? (
+                      <>
+                        <Loader2 className="size-4 animate-spin" />
+                        Sending…
+                      </>
+                    ) : (
+                      <>
+                        <Send className="size-4" />
+                        Send request
+                      </>
+                    )}
                   </Button>
                 </form>
 

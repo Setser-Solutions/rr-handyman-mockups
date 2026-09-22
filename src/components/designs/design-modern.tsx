@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useMemo, type FormEvent } from 'react';
+import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { toast } from 'sonner';
 import {
   Droplets,
   Hammer,
@@ -19,12 +18,14 @@ import {
   Menu,
   Calendar,
   Send,
+  Loader2,
   type LucideIcon,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useLeadForm } from '@/hooks/use-lead-form';
 import {
   Sheet,
   SheetContent,
@@ -154,14 +155,10 @@ export default function DesignModern() {
     return list.slice(0, 9);
   }, [galleryFilter]);
 
-  const handleQuoteSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    toast.success('Thanks — Rick will call you within 24 hours.', {
-      description: 'For emergencies call (555) 014-2837',
-    });
-    e.currentTarget.reset();
-    setServiceNeeded('');
-  };
+  const { submit: handleQuoteSubmit, submitting } = useLeadForm({
+    design: 'modern',
+    onAfterSubmit: () => setServiceNeeded(''),
+  });
 
   const closeMobileNav = () => setMobileNavOpen(false);
 
@@ -899,10 +896,20 @@ export default function DesignModern() {
                     </div>
                     <Button
                       type="submit"
-                      className="bg-amber-500 text-stone-950 hover:bg-amber-400"
+                      disabled={submitting}
+                      className="bg-amber-500 text-stone-950 hover:bg-amber-400 disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                      Get My Free Quote
-                      <Send className="size-4" />
+                      {submitting ? (
+                        <>
+                          <Loader2 className="size-4 animate-spin" />
+                          Sending…
+                        </>
+                      ) : (
+                        <>
+                          Get My Free Quote
+                          <Send className="size-4" />
+                        </>
+                      )}
                     </Button>
                     <p className="text-center text-xs text-stone-500">
                       For plumbing emergencies, call {BUSINESS.phone} directly.

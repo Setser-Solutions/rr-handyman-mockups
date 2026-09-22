@@ -13,6 +13,8 @@ import {
 } from 'lucide-react';
 import { BUSINESS, SEO_KEYWORDS } from '@/lib/business-info';
 import { ServiceEstimator } from '@/components/service-estimator';
+import { DesignNotes } from '@/components/design-notes';
+import { ShareButton } from '@/components/share-button';
 
 // Static imports — fixes the Radix useId hydration mismatch that occurred
 // with next/dynamic (ssr:true). All three designs are bundled; only the
@@ -72,13 +74,49 @@ const DESIGN_MAP: Record<DesignKey, () => JSX.Element> = {
   trusted: DesignTrusted,
 };
 
+function isDesignKey(s: string | null | undefined): s is DesignKey {
+  return s === 'modern' || s === 'portfolio' || s === 'trusted';
+}
+
 export default function Home() {
   const [active, setActive] = useState<DesignKey>('modern');
   const [compareMode, setCompareMode] = useState(false);
   const [bannerOpen, setBannerOpen] = useState(true);
   const [scrolled, setScrolled] = useState(false);
   const [scrollPct, setScrollPct] = useState(0);
+  const [footerInView, setFooterInView] = useState(false);
   const scrollRef = useRef(0);
+
+  // ===== Read URL hash on mount + on hashchange to deep-link to a specific design =====
+  // Supports #design=modern|portfolio|trusted|compare so the client can
+  // share a direct link to a specific mockup (or compare mode).
+  useEffect(() => {
+    function applyHash() {
+      if (typeof window === 'undefined') return;
+      const hash = window.location.hash.replace(/^#/, '');
+      const params = new URLSearchParams(hash.includes('=') ? hash : `design=${hash}`);
+      const d = params.get('design');
+      if (d === 'compare') {
+        setCompareMode(true);
+      } else if (isDesignKey(d)) {
+        setActive(d);
+        setCompareMode(false);
+      }
+    }
+    applyHash();
+    window.addEventListener('hashchange', applyHash);
+    return () => window.removeEventListener('hashchange', applyHash);
+  }, []);
+
+  // ===== Update URL hash when active design / compare mode changes =====
+  // so the URL stays shareable & survives reloads.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const hash = compareMode ? '#design=compare' : `#design=${active}`;
+    if (window.location.hash !== hash) {
+      window.history.replaceState(null, '', hash);
+    }
+  }, [active, compareMode]);
 
   // ===== Global keyboard shortcuts =====
   // 1 / 2 / 3  → switch to that design
@@ -118,6 +156,25 @@ export default function Home() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  // ===== Hide mobile floating CTAs when the footer is in view =====
+  // so they don't cover the footer's contact info. Uses IntersectionObserver
+  // on the <footer> element of the active design.
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('IntersectionObserver' in window)) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          setFooterInView(e.isIntersecting);
+        }
+      },
+      { rootMargin: '0px 0px -60px 0px', threshold: 0.05 },
+    );
+    // Observe any footer inside main; re-observe when active design changes.
+    const foot = document.querySelector('main footer');
+    if (foot) io.observe(foot);
+    return () => io.disconnect();
+  }, [active, compareMode]);
+
   // ===== Scroll-to-top when the active design changes (non-compare mode) =====
   useEffect(() => {
     if (!compareMode && typeof window !== 'undefined') {
@@ -137,6 +194,12 @@ export default function Home() {
 
   const activeDesign = DESIGNS.find((d) => d.key === active)!;
   const ActiveDesign = DESIGN_MAP[active];
+
+  // Mobile CTAs should hide: when footer is in view, when banner is collapsed
+  // by the user via keyboard while at the top, or when not yet scrolled.
+  const showMobileCta = scrolled && !footerInView;
+  // Back-to-top should lift above mobile CTAs on small screens.
+  const backToTopBottomClass = showMobileCta ? 'bottom-20' : 'bottom-6';
 
   return (
     <div className="min-h-screen flex flex-col bg-white text-stone-900">
@@ -180,6 +243,8 @@ export default function Home() {
 
             <div className="flex items-center gap-1.5">
               <ServiceEstimator />
+              <DesignNotes activeDesign={active} />
+              <ShareButton design={compareMode ? 'compare' : active} />
               {/* Compare mode toggle */}
               <button
                 type="button"
@@ -297,7 +362,7 @@ export default function Home() {
         type="button"
         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
         aria-label="Scroll back to top"
-        className={`fixed bottom-6 right-6 z-50 inline-flex h-11 w-11 items-center justify-center rounded-full bg-stone-900 text-white shadow-lg ring-1 ring-black/10 transition-all hover:bg-stone-800 hover:scale-105 ${
+        className={`fixed ${backToTopBottomClass} right-4 sm:right-6 z-50 inline-flex h-11 w-11 items-center justify-center rounded-full bg-stone-900 text-white shadow-lg ring-1 ring-black/10 transition-all hover:bg-stone-800 hover:scale-105 ${
           scrolled ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none'
         }`}
       >
@@ -305,9 +370,10 @@ export default function Home() {
       </button>
 
       {/* ===== Mobile floating CTAs (only on small screens) ===== */}
+      {/* Hidden when the footer is in view so they don't cover footer contact info. */}
       <div
-        className={`sm:hidden fixed bottom-0 left-0 right-0 z-50 grid grid-cols-2 gap-px border-t border-stone-200 bg-white/95 backdrop-blur shadow-[0_-2px_10px_rgba(0,0,0,0.06)] transition-transform ${
-          scrolled ? 'translate-y-0' : 'translate-y-full'
+        className={`sm:hidden fixed bottom-0 left-0 right-0 z-40 grid grid-cols-2 gap-px border-t border-stone-200 bg-white/95 backdrop-blur shadow-[0_-2px_10px_rgba(0,0,0,0.06)] transition-all duration-300 ${
+          showMobileCta ? 'translate-y-0' : 'translate-y-full pointer-events-none'
         }`}
       >
         <a
