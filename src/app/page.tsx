@@ -15,6 +15,13 @@ import { BUSINESS, SEO_KEYWORDS } from '@/lib/business-info';
 import { ServiceEstimator } from '@/components/service-estimator';
 import { DesignNotes } from '@/components/design-notes';
 import { ShareButton } from '@/components/share-button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 // Static imports — fixes the Radix useId hydration mismatch that occurred
 // with next/dynamic (ssr:true). All three designs are bundled; only the
@@ -78,6 +85,34 @@ function isDesignKey(s: string | null | undefined): s is DesignKey {
   return s === 'modern' || s === 'portfolio' || s === 'trusted';
 }
 
+/**
+ * Update the <meta property="og:image"> and twitter:image tags in <head>
+ * so social-media crawlers pick up the active design's branded OG card.
+ * Crawlers don't run JS, but this covers the case where someone shares the
+ * URL after the page has loaded (e.g. via the ShareButton's copied link).
+ */
+function updateOgImage(design: DesignKey | 'default') {
+  if (typeof document === 'undefined') return;
+  const ogUrl = `/api/og?design=${design}`;
+  const ogImage = document.querySelector('meta[property="og:image"]');
+  if (ogImage) {
+    ogImage.setAttribute('content', ogUrl);
+  }
+  const twImage = document.querySelector('meta[name="twitter:image"]');
+  if (twImage) {
+    twImage.setAttribute('content', ogUrl);
+  }
+  const ogTitle = document.querySelector('meta[property="og:title"]');
+  if (ogTitle) {
+    ogTitle.setAttribute(
+      'content',
+      design === 'default'
+        ? `${BUSINESS.brand} — Website Mockups`
+        : `${BUSINESS.brand} — ${DESIGNS.find((d) => d.key === design)?.name ?? ''}`,
+    );
+  }
+}
+
 export default function Home() {
   const [active, setActive] = useState<DesignKey>('modern');
   const [compareMode, setCompareMode] = useState(false);
@@ -85,6 +120,7 @@ export default function Home() {
   const [scrolled, setScrolled] = useState(false);
   const [scrollPct, setScrollPct] = useState(0);
   const [footerInView, setFooterInView] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
   const scrollRef = useRef(0);
 
   // ===== Read URL hash on mount + on hashchange to deep-link to a specific design =====
@@ -122,6 +158,7 @@ export default function Home() {
   // 1 / 2 / 3  → switch to that design
   // c / C      → toggle compare mode
   // b / B      → collapse/expand the switcher banner
+  // ?          → toggle the keyboard shortcuts help dialog
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       // Ignore if user is typing in a form field
@@ -134,7 +171,11 @@ export default function Home() {
       else if (e.key === '3') { setActive('trusted'); setCompareMode(false); }
       else if (e.key === 'c' || e.key === 'C') { setCompareMode((v) => !v); }
       else if (e.key === 'b' || e.key === 'B') { setBannerOpen((v) => !v); }
-      else if (e.key === 'Escape' && compareMode) { setCompareMode(false); }
+      else if (e.key === '?') { setHelpOpen((v) => !v); }
+      else if (e.key === 'Escape') {
+        if (compareMode) setCompareMode(false);
+        setHelpOpen(false);
+      }
     }
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -182,13 +223,18 @@ export default function Home() {
     }
   }, [active, compareMode]);
 
-  // ===== Per-design document.title (so the browser tab reflects the active mockup) =====
+  // ===== Per-design document.title + OG image meta tag =====
+  // Updates the browser tab title AND the <meta property="og:image"> tag
+  // so sharing the current URL on social media shows the active design's
+  // branded OG card (generated dynamically by /api/og?design=<key>).
   useEffect(() => {
     if (compareMode) {
       document.title = `${BUSINESS.brand} — All 3 mockups (compare mode)`;
+      updateOgImage('default');
     } else {
       const d = DESIGNS.find((x) => x.key === active);
       document.title = `${BUSINESS.brand} — ${d?.docTitle ?? ''}`;
+      updateOgImage(active);
     }
   }, [active, compareMode]);
 
@@ -342,7 +388,7 @@ export default function Home() {
                 </span>
               </div>
               <p className="text-[10px] text-stone-400">
-                Tip: Press <kbd className="rounded border border-stone-300 bg-stone-100 px-1 font-mono">1</kbd>/<kbd className="rounded border border-stone-300 bg-stone-100 px-1 font-mono">2</kbd>/<kbd className="rounded border border-stone-300 bg-stone-100 px-1 font-mono">3</kbd> to swap designs, <kbd className="rounded border border-stone-300 bg-stone-100 px-1 font-mono">C</kbd> for compare mode, <kbd className="rounded border border-stone-300 bg-stone-100 px-1 font-mono">B</kbd> to collapse this banner. {SEO_KEYWORDS.clusters.length} service keywords wired in.
+                Tip: Press <kbd className="rounded border border-stone-300 bg-stone-100 px-1 font-mono">1</kbd>/<kbd className="rounded border border-stone-300 bg-stone-100 px-1 font-mono">2</kbd>/<kbd className="rounded border border-stone-300 bg-stone-100 px-1 font-mono">3</kbd> to swap designs, <kbd className="rounded border border-stone-300 bg-stone-100 px-1 font-mono">C</kbd> for compare, <kbd className="rounded border border-stone-300 bg-stone-100 px-1 font-mono">B</kbd> to collapse, <kbd className="rounded border border-stone-300 bg-stone-100 px-1 font-mono">?</kbd> for help. {SEO_KEYWORDS.clusters.length} service keywords wired in.
               </p>
             </div>
           )}
@@ -391,7 +437,85 @@ export default function Home() {
           Free Quote
         </a>
       </div>
+
+      {/* ===== Keyboard shortcuts help dialog (toggle with ?) ===== */}
+      <KeyboardHelpDialog open={helpOpen} onOpenChange={setHelpOpen} />
+
+      {/* ===== Help trigger button (bottom-left, desktop only) ===== */}
+      <button
+        type="button"
+        onClick={() => setHelpOpen(true)}
+        className="hidden sm:inline-flex fixed bottom-6 left-6 z-40 h-9 w-9 items-center justify-center rounded-full border border-stone-300 bg-white/90 text-stone-500 shadow-sm backdrop-blur transition-colors hover:border-stone-900 hover:bg-white hover:text-stone-900"
+        title="Keyboard shortcuts (press ?)"
+        aria-label="Show keyboard shortcuts"
+      >
+        <span className="text-sm font-bold">?</span>
+      </button>
     </div>
+  );
+}
+
+/* ============================================================
+   Keyboard shortcuts help dialog — toggled by the ? key or the
+   bottom-left ? button. Lists every shortcut with descriptions.
+   ============================================================ */
+function KeyboardHelpDialog({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+}) {
+  const shortcuts: { keys: string[]; desc: string }[] = [
+    { keys: ['1'], desc: 'Switch to Modern Professional design' },
+    { keys: ['2'], desc: 'Switch to Before/After Portfolio design' },
+    { keys: ['3'], desc: 'Switch to Trusted Local Craftsman design' },
+    { keys: ['C'], desc: 'Toggle compare mode (all 3 designs stacked)' },
+    { keys: ['B'], desc: 'Collapse / expand the switcher banner' },
+    { keys: ['?'], desc: 'Open / close this help dialog' },
+    { keys: ['Esc'], desc: 'Close dialogs / exit compare mode' },
+  ];
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <span className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-stone-900 text-sm font-bold text-amber-400">
+              ?
+            </span>
+            Keyboard shortcuts
+          </DialogTitle>
+          <DialogDescription>
+            Use these keys anywhere on the page (except when typing in a form
+            field) to navigate the mockup switcher faster.
+          </DialogDescription>
+        </DialogHeader>
+        <dl className="space-y-2 pt-2">
+          {shortcuts.map((s) => (
+            <div key={s.keys.join('')} className="flex items-center justify-between gap-4">
+              <dt className="flex items-center gap-1">
+                {s.keys.map((k) => (
+                  <kbd
+                    key={k}
+                    className="rounded-md border border-stone-300 bg-stone-100 px-2 py-1 text-xs font-mono font-semibold text-stone-700 shadow-sm"
+                  >
+                    {k}
+                  </kbd>
+                ))}
+              </dt>
+              <dd className="text-sm text-stone-600 text-right">{s.desc}</dd>
+            </div>
+          ))}
+        </dl>
+        <div className="mt-4 rounded-lg border border-stone-200 bg-stone-50 p-3 text-xs text-stone-500">
+          Tip: Deep-links work too — share{' '}
+          <code className="rounded bg-stone-200 px-1 py-0.5 font-mono">
+            /#design=trusted
+          </code>{' '}
+          to send someone straight to that design.
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 

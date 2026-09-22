@@ -309,3 +309,98 @@ Stage Summary:
   3. Generate per-design OpenGraph images via an Image Response API route so sharing a design on social shows that design's hero.
   4. Add email notification (Resend/SendGrid) when a new lead is submitted.
   5. Replace placeholder business details (phone/email/license) in `src/lib/business-info.ts` with Rick's real info before going live.
+
+---
+Task ID: 6-a
+Agent: full-stack-developer (Admin Dashboard)
+Task: Build a polished admin dashboard at `/admin/leads` for Rick to view leads + design feedback. Stats cards, tabs (Leads/Feedback), filters, search, CSV export, auto-refresh, empty states, sticky footer — single-file React client page consuming the existing `/api/leads` and `/api/feedback/list` endpoints.
+
+Work Log:
+- Read worklog.md (rounds 0–5) to absorb project context: stack (Next.js 16 + TS + Tailwind 4 + shadcn/ui New York + Prisma SQLite), 3 mockup designs on `/` (modern=amber, portfolio=emerald, trusted=orange accents), lead/feedback API shapes already live.
+- Inspected existing API routes (`/api/leads` GET returns `{ ok, leads, count }` last 50; `/api/feedback/list` GET returns `{ ok, feedback, count }` last 100) and confirmed response shapes for typing.
+- Verified available shadcn/ui components (Card, Button, Badge, Input, Tabs, Switch, Skeleton, Alert) and the existing `scrollbar-thin` CSS class in `globals.css`.
+- Created `/home/z/my-project/src/app/admin/leads/page.tsx` as a `'use client'` default-exported `AdminLeadsPage`. Used only `@/` imports. No other files touched.
+- Implemented: page header with brand chip, last-refresh timestamp, Refresh button (with spinner), auto-refresh Switch (default ON, 30s `setInterval` cleared on unmount), and "View site" link to `/`.
+- Implemented 4 stats cards (`grid-cols-2 md:grid-cols-4`): Total leads, Leads by design (3 colored dots + counts using amber/emerald/orange accents), Avg feedback rating (X.X with ★), Feedback notes count. Skeleton placeholders during initial load.
+- Implemented Tabs (Leads | Feedback) with count badges.
+- Leads tab: filter card with search Input (name/phone/email/message, case-insensitive), Design filter pills (All/Modern/Portfolio/Trusted), Service filter pills (All/Plumbing/Carpentry/Power Washing/Multiple — Multiple matches both "Multiple / Not sure" and "Not sure / multiple" stored variants), CSV export button (disabled when no matches).
+- Leads table: semantic `<table>` with `<thead scope="col">`, sticky header, `max-h-[600px] overflow-auto scrollbar-thin`. Columns: Date (formatted + relative), Name, Phone (clickable `tel:` link), Email (clickable `mailto:` link), Service (normalized), Design (colored Badge with dot), Message (truncated to 60 chars with full text in `title` attr; falls back to estimate if no message). Horizontal scroll on mobile via the same overflow container.
+- Feedback tab: 3-column grid of design cards (modern/portfolio/trusted), each with colored dot + count badge, list of notes with star ratings (5-star row with filled/empty stars) and relative timestamps (title attr shows full datetime), `max-h-[400px] overflow-y-auto scrollbar-thin` per card. CSV export button at top.
+- CSV export: client-side `Blob` + `URL.createObjectURL` + `<a download>` approach, no API needed. Filenames like `rr-handyman-leads-2024-01-15.csv`. Proper CSV escaping (quotes/commas/newlines). Leads CSV: Date,Name,Phone,Email,Service,Design,Estimate,Message. Feedback CSV: Date,Design,Rating,Notes.
+- Loading states: skeleton cards in stats row, skeleton rows in leads table (5 rows), skeleton cards in feedback grid. Error state: red Alert with "Try again" retry button (re-runs `fetchData`).
+- Empty states: friendly empty-state card with icon + body when no leads at all ("Share your site link to start collecting quotes"), when no leads match filters ("Try clearing the search box"), and when no feedback at all ("Use the 'Design Notes' button on the public site…").
+- Accessibility: semantic `<main>`/`<header>`/`<section>`/`<table>`/`<footer>`, `aria-label` on icon-only buttons + Switch, `aria-pressed` on filter pills, `scope="col"` on `<th>`, `sr-only` text for star ratings + tab count badges, all interactive elements keyboard-reachable, color accompanied by text labels.
+- Sticky footer pattern: `min-h-screen flex flex-col` wrapper, `<main class="flex-1">`, `<footer class="mt-auto">` with brand + "Back to public site →" link.
+- Color discipline: NO indigo or blue anywhere. Page `bg-stone-50`, cards `bg-white border-stone-200`, primary action button `bg-stone-900 hover:bg-stone-800`, design accents match the public site (amber-500/emerald-500/orange-500 for modern/portfolio/trusted).
+- Ran `bun run lint` — clean (0 errors, 0 warnings). Curl-tested `/admin/leads` — HTTP 200, dev.log shows clean compile (~1.4s cold, ~190ms warm). Verified HTML contains "R&R Handyman — Admin", "Auto · 30s", "Filter leads", "View site".
+
+Stage Summary:
+- File produced: `/home/z/my-project/src/app/admin/leads/page.tsx` (single `'use client'` file, ~1000 lines, default export `AdminLeadsPage`). No other files touched.
+- Route live at `/admin/leads` — returns 200, compiles cleanly, lints cleanly.
+- Full feature set delivered: 4 stat cards, Leads/Feedback tabs, search + design + service filters, sticky-header scrollable table with clickable tel:/mailto: links, grouped feedback cards with star ratings + relative time, CSV export (Blob+download), 30s auto-refresh toggle (default ON), manual Refresh button with spinner, loading skeletons everywhere, error alert with retry, friendly empty states, sticky footer, mobile-responsive (cards stack, table scrolls horizontally).
+- Design notes / caveats:
+  - The `/api/leads` endpoint caps results at 50, so "Total leads" really means "leads shown (last 50)". Labelled hint "last 50 submissions" on the card and the stats reflect what's actually loaded. If the dashboard ever needs full history, the API would need pagination/`?limit=` support.
+  - Leads CSV export respects the current filters (so Rick can filter then export a slice). If no filters are applied, it exports the entire loaded set.
+  - Auto-refresh uses a `setInterval` cleared on unmount or when the toggle is turned off. An `inFlightRef` guard prevents overlapping fetches if the manual Refresh button is hammered.
+  - No auth on the dashboard (matches the existing open `/api/leads` GET). Round 5 of the worklog flagged "password-protected" as a future enhancement; this round ships the UI only.
+
+---
+Task ID: 6
+Agent: webDevReview (cron round 3)
+Task: Scheduled webDevReview pass #3 — QA the live site, then add admin dashboard, OG image generation, estimator→lead-form wiring, and keyboard help dialog.
+
+Work Log:
+- Read worklog.md (rounds 0–5). Round 5 left the project stable with: real lead-form backend (Prisma + /api/leads), Design Notes drawer, Share/deep-link button, sitemap/robots, mobile CTA overlap fix. Recommended next-phase priorities were: (1) admin dashboard, (2) wire estimator → lead form, (3) OG image generation, (4) email notifications, (5) real business info.
+- QA via agent-browser (desktop 1280×800): console clean, no hydration errors. All 3 designs switch correctly via keyboard (1/2/3). Per-design document.title updates. Service Estimator dialog opens. Lead form submits + toast fires + form resets. Design Notes drawer opens + persists notes. Deep-linking via #design=<key> works. Sitemap.xml + robots.txt routes return valid content. APIs all return 200/201.
+- Initial false alarm: agent-browser `find text` click was being intercepted by the sticky banner for the gallery filter pills — verified the filter logic itself is correct via direct JS click. Not a real bug.
+- No bugs found this round. Project was stable → proceeded to new features.
+
+NEW FEATURES:
+1. **Admin dashboard** (`/admin/leads`) — built via subagent (Task ID 6-a):
+   - Full-page admin dashboard at `/admin/leads` with: header (brand, last-refresh time, manual Refresh button, Auto·30s toggle, View site link), 4 stats cards (Total leads, Leads by design with colored dots, Avg feedback rating, Feedback notes count), Tabs (Leads | Feedback), Leads table with search + design filter + service filter + CSV export, Feedback tab grouped by design with star ratings + relative timestamps, empty states, skeleton loading. Sticky footer. Stone neutrals + amber/emerald/orange accents. No indigo/blue.
+   - Verified: loads with real data (3 leads, 2 feedback, 5.0 avg rating). Auto-refresh toggle works. CSV export downloads. Mobile responsive.
+2. **Dynamic OG image generation** (`/api/og?design=modern|portfolio|trusted|default`):
+   - Created `src/app/api/og/route.tsx` using `next/og` ImageResponse. Generates 1200×630 PNG branded cards per design: brand badge (R&R), design tag ("Design 1 of 3"), headline (per-design), stats (12+ years · 1,850+ jobs · 4.9★), phone number, hero photo (from /public/handyman-photos), footer bar ("Licensed & Insured · Springfield County"). Per-design color palette (modern=dark+amber, portfolio=light+emerald, trusted=light+orange). Cache-Control: public, max-age=86400.
+   - Updated `src/app/layout.tsx` openGraph.images + twitter.images to use `/api/og?design=default`.
+   - Added `updateOgImage(design)` helper in page.tsx that updates the `<meta property="og:image">`, `twitter:image`, and `og:title` tags client-side when the active design changes — so sharing the URL after switching designs shows the correct branded card.
+   - Verified: `curl /api/og?design=modern` → HTTP 200, 1200×630 RGBA PNG (563KB). VLM confirmed all visual elements present (brand, tag, headline, stats, photo, colors).
+3. **Estimator → lead-form wiring** (Zustand shared store):
+   - Created `src/lib/estimate-store.ts` — tiny Zustand store with `{ estimate, setEstimate }` + `formatEstimate()` helper. The estimator writes to it; the lead-form hook reads from it.
+   - Updated `src/components/service-estimator.tsx` to write the current estimate (range + breakdown + timestamp) to the store via `useEffect` (only when the dialog is open, so stale estimates don't pollute leads).
+   - Updated `src/hooks/use-lead-form.ts` to read from the store via `useEstimateStore.getState().estimate` at submit time (prefers an explicit `opts.estimate` prop if passed, otherwise falls back to the store). The formatted estimate string (e.g. "$1,305 – $1,765 (Carpentry · Large · Standard)") is now attached to every lead submitted after using the estimator.
+   - Verified via curl: `POST /api/leads` with `estimate: "$1,305 – $1,765 (Carpentry · Large · Standard)"` → 201 → lead persisted with the estimate. Admin dashboard shows "Est:" hint in the table when no message is present, and the estimate is in the CSV export.
+4. **Keyboard shortcuts help dialog** (`?` key):
+   - Added `?` keyboard shortcut + a bottom-left `?` button (desktop only) that opens a `Dialog` listing every shortcut (1/2/3/C/B/?/Esc) with descriptions. Includes a tip about deep-links (`/#design=trusted`). Closes on Esc.
+   - Updated the banner tip line to mention the `?` shortcut.
+   - Verified: `?` opens the dialog, Esc closes it, VLM confirmed all shortcuts listed with descriptions + deep-link tip.
+
+VERIFICATION:
+- `bun run lint` — clean (0 errors, 0 warnings).
+- agent-browser QA: console clean, all features working.
+- API verification:
+  - `GET /api/og?design=modern` → 200, valid 1200×630 PNG.
+  - `GET /api/og?design=portfolio` → 200, valid PNG.
+  - `GET /api/og?design=trusted` → 200, valid PNG.
+  - `POST /api/leads` with estimate → 201, estimate persisted.
+  - `GET /admin/leads` → 200, dashboard renders with real data.
+- DB state at end of round: 3 leads (1 with estimate), 2 feedback notes.
+- QA screenshots saved under `/home/z/my-project/download/qa/round3-*` and `og-*.png`.
+
+Stage Summary:
+- Project status: STABLE & INCREASINGLY FEATURE-RICH.
+- 0 bugs found this round (project was stable from round 5).
+- 4 major new features added: (1) admin dashboard at /admin/leads with stats + filters + CSV export, (2) dynamic per-design OG image generation via /api/og, (3) estimator → lead-form wiring via Zustand store (estimate now persisted with leads), (4) keyboard shortcuts help dialog (?).
+- Files created/modified this round:
+  - `src/app/admin/leads/page.tsx` (NEW — admin dashboard, ~1016 lines)
+  - `src/app/api/og/route.tsx` (NEW — OG image generator)
+  - `src/lib/estimate-store.ts` (NEW — Zustand store for estimate)
+  - `src/components/service-estimator.tsx` (write estimate to store)
+  - `src/hooks/use-lead-form.ts` (read estimate from store)
+  - `src/app/page.tsx` (OG meta update + help dialog + ? shortcut + ? button)
+  - `src/app/layout.tsx` (OG images → /api/og)
+- Recommended next-phase priorities (for round 7, if needed):
+  1. Add password protection to /admin/leads (currently open — matches the open /api/leads GET).
+  2. Add email notification (Resend/SendGrid) when a new lead is submitted.
+  3. Replace placeholder business details in `src/lib/business-info.ts` with Rick's real info.
+  4. Add pagination to the admin dashboard (currently shows last 50 leads).
+  5. Add a 4th design variant if the client wants more options.

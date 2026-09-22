@@ -3,6 +3,7 @@
 import { useState, useCallback, type FormEvent } from 'react';
 import { toast } from 'sonner';
 import { BUSINESS } from '@/lib/business-info';
+import { useEstimateStore, formatEstimate } from '@/lib/estimate-store';
 
 export type DesignKey = 'modern' | 'portfolio' | 'trusted';
 
@@ -68,6 +69,11 @@ export function useLeadForm(opts: UseLeadFormOptions) {
 
       setSubmitting(true);
 
+      // Resolve the estimate snapshot: prefer the explicit prop, otherwise
+      // read from the shared Zustand store (populated by ServiceEstimator).
+      const storeEstimate = formatEstimate(useEstimateStore.getState().estimate);
+      const estimateValue = opts.estimate ?? storeEstimate;
+
       try {
         const ctrl = new AbortController();
         const timeout = setTimeout(() => ctrl.abort(), 8000);
@@ -83,7 +89,7 @@ export function useLeadForm(opts: UseLeadFormOptions) {
               service: data.service || undefined,
               message: data.message || undefined,
               design: opts.design,
-              estimate: opts.estimate,
+              estimate: estimateValue,
             }),
             signal: ctrl.signal,
           });

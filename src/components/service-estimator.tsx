@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Calculator, DollarSign, Info, Phone, Sparkles, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,6 +21,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { BUSINESS } from '@/lib/business-info';
+import { useEstimateStore } from '@/lib/estimate-store';
 
 type ServiceKey = 'plumbing' | 'carpentry' | 'power-washing';
 type ScopeKey = 'small' | 'medium' | 'large';
@@ -64,6 +65,7 @@ export function ServiceEstimator() {
   const [scope, setScope] = useState<ScopeKey>('small');
   const [urgency, setUrgency] = useState<UrgencyKey>('standard');
   const [zip, setZip] = useState('');
+  const setEstimate = useEstimateStore((s) => s.setEstimate);
 
   const { low, high, breakdown } = useMemo(() => {
     const cfg = BASE_BY_SERVICE[service];
@@ -84,6 +86,21 @@ export function ServiceEstimator() {
       },
     };
   }, [service, scope, urgency]);
+
+  // Persist the latest estimate to the shared store so the lead form can
+  // attach it to the submitted lead. Only updates when the dialog is open
+  // (so we don't pollute leads with stale estimates the user never saw).
+  useEffect(() => {
+    if (!open) return;
+    const cfg = BASE_BY_SERVICE[service];
+    const scopeCfg = SCOPES.find((s) => s.key === scope)!;
+    const urgCfg = URGENCIES.find((u) => u.key === urgency)!;
+    setEstimate({
+      range: `$${low.toLocaleString()} – $${high.toLocaleString()}`,
+      breakdown: `${cfg.label} · ${scopeCfg.label} · ${urgCfg.label}`,
+      at: Date.now(),
+    });
+  }, [open, low, high, service, scope, urgency, setEstimate]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

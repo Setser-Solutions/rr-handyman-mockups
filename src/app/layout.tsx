@@ -69,16 +69,13 @@ export const metadata: Metadata = {
     locale: "en_US",
     images: [
       {
-        url: "/handyman-photos/img_013.jpg",
-        width: 2048,
-        height: 1536,
-        alt: "Newly constructed front porch with white columns built by R&R Handyman Services.",
-      },
-      {
-        url: "/handyman-photos/img_000.jpg",
-        width: 2048,
-        height: 1536,
-        alt: "Custom multi-level wooden deck built by R&R Handyman Services.",
+        // Dynamic OG image (1200×630 PNG generated via /api/og).
+        // Defaults to the brand card; page.tsx updates the og:image meta
+        // tag client-side when the active design changes.
+        url: "/api/og?design=default",
+        width: 1200,
+        height: 630,
+        alt: `${BUSINESS.brand} — Plumbing, Carpentry & Power Washing in ${BUSINESS.primaryCity}.`,
       },
     ],
   },
@@ -86,7 +83,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: `${BUSINESS.brand} — ${BUSINESS.primaryCity} Handyman`,
     description: `Plumbing, carpentry, and power washing done right the first time. Call ${BUSINESS.phone}.`,
-    images: ["/handyman-photos/img_013.jpg"],
+    images: ["/api/og?design=default"],
   },
   other: {
     "geo.region": "US-MA",
