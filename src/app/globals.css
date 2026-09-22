@@ -120,3 +120,74 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* ----- Custom scrollbar (used in long lists / mobile menus) ----- */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: oklch(0.7 0 0) transparent;
+}
+.scrollbar-thin::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: oklch(0.7 0 0);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+.scrollbar-thin:hover::-webkit-scrollbar-thumb {
+  background-color: oklch(0.55 0 0);
+}
+
+/* ----- Image blur-up placeholder shimmer ----- */
+@keyframes handyman-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.img-placeholder {
+  background: linear-gradient(
+    90deg,
+    oklch(0.92 0 0) 0%,
+    oklch(0.96 0 0) 20%,
+    oklch(0.92 0 0) 40%,
+    oklch(0.92 0 0) 100%
+  );
+  background-size: 200% 100%;
+  animation: handyman-shimmer 1.6s ease-in-out infinite;
+}
+
+/* ----- Scroll progress bar (top of page) ----- */
+@keyframes handyman-scroll-progress {
+  0%, 100% { opacity: 0; }
+  10%, 90% { opacity: 1; }
+}
+
+/* ----- Honor reduced-motion preference globally ----- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ----- Smooth anchor scrolling that respects the sticky switcher ----- */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 88px;
+}
+
+/* ----- Subtle decorative grid texture for hero overlays ----- */
+.bg-grid-texture {
+  background-image:
+    linear-gradient(to right, oklch(1 0 0 / 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, oklch(1 0 0 / 0.04) 1px, transparent 1px);
+  background-size: 32px 32px;
+}

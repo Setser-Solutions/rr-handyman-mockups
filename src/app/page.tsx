@@ -1,157 +1,381 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import dynamic from 'next/dynamic';
-import { Check, ChevronRight, Eye, ImageIcon, Phone } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { useEffect, useRef, useState } from 'react';
+import {
+  Check,
+  ChevronUp,
+  Eye,
+  ImageIcon,
+  Layers,
+  Phone,
+  Send,
+  X,
+} from 'lucide-react';
 import { BUSINESS, SEO_KEYWORDS } from '@/lib/business-info';
+import { ServiceEstimator } from '@/components/service-estimator';
+
+// Static imports — fixes the Radix useId hydration mismatch that occurred
+// with next/dynamic (ssr:true). All three designs are bundled; only the
+// active one is rendered at a time so React's useId stays stable across
+// server render and client hydration.
+import DesignModern from '@/components/designs/design-modern';
+import DesignPortfolio from '@/components/designs/design-portfolio';
+import DesignTrusted from '@/components/designs/design-trusted';
 
 type DesignKey = 'modern' | 'portfolio' | 'trusted';
 
 const DESIGNS: {
   key: DesignKey;
+  shortLabel: string;
   name: string;
   tag: string;
   desc: string;
-  accent: string;
+  accent: string; // tailwind bg class for the dot
+  ring: string; // tailwind ring/border class for active state
+  docTitle: string;
 }[] = [
   {
     key: 'modern',
+    shortLabel: 'Modern',
     name: 'Modern Professional',
     tag: 'Bold · Dark · Energetic',
     desc: 'Dark hero with amber accents. Contractor-grade confidence, with strong CTAs and an interactive gallery.',
     accent: 'bg-amber-500',
+    ring: 'ring-amber-500/40',
+    docTitle: 'Design 1 · Modern Professional',
   },
   {
     key: 'portfolio',
+    shortLabel: 'Portfolio',
     name: 'Before/After Portfolio',
     tag: 'Light · Visual · Photo-led',
     desc: 'Light, photography-driven layout with a split before/after hero, masonry gallery, and case-study spotlight.',
     accent: 'bg-emerald-500',
+    ring: 'ring-emerald-500/40',
+    docTitle: 'Design 2 · Before/After Portfolio',
   },
   {
     key: 'trusted',
+    shortLabel: 'Trusted',
     name: 'Trusted Local Craftsman',
     tag: 'Warm · Story-driven · Friendly',
     desc: 'Warm, meet-the-owner vibe with a personal story, process section, and trust badges throughout.',
     accent: 'bg-orange-500',
+    ring: 'ring-orange-500/40',
+    docTitle: 'Design 3 · Trusted Local Craftsman',
   },
 ];
 
-// Lazy-load each design so only the active one ships to the client.
-const DesignModern = dynamic(
-  () => import('@/components/designs/design-modern'),
-  { ssr: true }
-);
-const DesignPortfolio = dynamic(
-  () => import('@/components/designs/design-portfolio'),
-  { ssr: true }
-);
-const DesignTrusted = dynamic(
-  () => import('@/components/designs/design-trusted'),
-  { ssr: true }
-);
-
-function DesignRenderer({ active }: { active: DesignKey }) {
-  if (active === 'modern') return <DesignModern />;
-  if (active === 'portfolio') return <DesignPortfolio />;
-  return <DesignTrusted />;
-}
+const DESIGN_MAP: Record<DesignKey, () => JSX.Element> = {
+  modern: DesignModern,
+  portfolio: DesignPortfolio,
+  trusted: DesignTrusted,
+};
 
 export default function Home() {
   const [active, setActive] = useState<DesignKey>('modern');
+  const [compareMode, setCompareMode] = useState(false);
+  const [bannerOpen, setBannerOpen] = useState(true);
+  const [scrolled, setScrolled] = useState(false);
+  const [scrollPct, setScrollPct] = useState(0);
+  const scrollRef = useRef(0);
 
-  // Scroll back to top whenever the design changes so the reviewer
-  // sees the new hero, not wherever they were on the previous design.
+  // ===== Global keyboard shortcuts =====
+  // 1 / 2 / 3  → switch to that design
+  // c / C      → toggle compare mode
+  // b / B      → collapse/expand the switcher banner
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    function onKey(e: KeyboardEvent) {
+      // Ignore if user is typing in a form field
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable || t.tagName === 'SELECT')) {
+        return;
+      }
+      if (e.key === '1') { setActive('modern'); setCompareMode(false); }
+      else if (e.key === '2') { setActive('portfolio'); setCompareMode(false); }
+      else if (e.key === '3') { setActive('trusted'); setCompareMode(false); }
+      else if (e.key === 'c' || e.key === 'C') { setCompareMode((v) => !v); }
+      else if (e.key === 'b' || e.key === 'B') { setBannerOpen((v) => !v); }
+      else if (e.key === 'Escape' && compareMode) { setCompareMode(false); }
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [compareMode]);
+
+  // ===== Scroll progress + back-to-top visibility =====
+  useEffect(() => {
+    function onScroll() {
+      const doc = document.documentElement;
+      const top = window.scrollY || doc.scrollTop;
+      const height = doc.scrollHeight - doc.clientHeight;
+      const pct = height > 0 ? Math.min(100, (top / height) * 100) : 0;
+      scrollRef.current = top;
+      setScrollPct(pct);
+      setScrolled(top > 600);
+    }
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  // ===== Scroll-to-top when the active design changes (non-compare mode) =====
+  useEffect(() => {
+    if (!compareMode && typeof window !== 'undefined') {
       window.scrollTo({ top: 0, behavior: 'auto' });
     }
-  }, [active]);
+  }, [active, compareMode]);
+
+  // ===== Per-design document.title (so the browser tab reflects the active mockup) =====
+  useEffect(() => {
+    if (compareMode) {
+      document.title = `${BUSINESS.brand} — All 3 mockups (compare mode)`;
+    } else {
+      const d = DESIGNS.find((x) => x.key === active);
+      document.title = `${BUSINESS.brand} — ${d?.docTitle ?? ''}`;
+    }
+  }, [active, compareMode]);
+
+  const activeDesign = DESIGNS.find((d) => d.key === active)!;
+  const ActiveDesign = DESIGN_MAP[active];
 
   return (
     <div className="min-h-screen flex flex-col bg-white text-stone-900">
-      {/*
-        ===== Mockup Switcher Banner =====
-        Non-sticky, sits at the top of the page so it scrolls away once the
-        user is exploring a design. Each design has its own sticky nav inside.
-      */}
-      <header className="border-b border-stone-200 bg-stone-50">
-        <div className="mx-auto max-w-7xl px-4 py-4 md:py-5">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-stone-900 text-sm font-bold text-amber-400">
-                R&amp;R
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-stone-900">
+      {/* ===== Scroll progress bar (top of viewport) ===== */}
+      <div
+        className="fixed top-0 left-0 right-0 z-[70] h-0.5 bg-stone-200/60 pointer-events-none"
+        aria-hidden
+      >
+        <div
+          className="h-full bg-gradient-to-r from-amber-500 via-orange-500 to-emerald-500 transition-[width] duration-150 ease-out"
+          style={{ width: `${scrollPct}%` }}
+        />
+      </div>
+
+      {/* ===== Mockup Switcher Banner ===== */}
+      <header className="sticky top-0 z-[60] border-b border-stone-200 bg-stone-50/95 backdrop-blur">
+        <div className="mx-auto max-w-7xl px-4 py-3 md:py-4">
+          <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-stone-900 text-sm font-bold text-amber-400 shadow-sm">
+              R&amp;R
+            </div>
+
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <p className="truncate text-sm font-semibold text-stone-900">
                   {BUSINESS.brand} — Website Mockups
                 </p>
-                <p className="text-xs text-stone-500">
+                <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-stone-200/70 px-2 py-0.5 text-[10px] font-medium text-stone-600">
+                  <ImageIcon className="h-3 w-3" aria-hidden />
+                  46 real photos
+                </span>
+              </div>
+              {bannerOpen && (
+                <p className="mt-0.5 text-xs text-stone-500">
                   3 unique design concepts using the client&apos;s real project
                   photos, organized by trade (plumbing · carpentry · power
-                  washing). Built SEO-friendly & lead-generating.
+                  washing). SEO-friendly & lead-generating.
                 </p>
-              </div>
+              )}
             </div>
 
-            <div className="flex flex-wrap items-center gap-1.5">
-              {DESIGNS.map((d) => {
-                const isActive = d.key === active;
-                return (
-                  <button
-                    key={d.key}
-                    type="button"
-                    onClick={() => setActive(d.key)}
-                    aria-pressed={isActive}
-                    className={`group inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors sm:text-sm ${
-                      isActive
-                        ? 'border-stone-900 bg-stone-900 text-white'
-                        : 'border-stone-300 bg-white text-stone-700 hover:border-stone-900 hover:bg-stone-100'
-                    }`}
-                  >
-                    <span
-                      className={`h-2 w-2 rounded-full ${d.accent}`}
-                      aria-hidden
-                    />
-                    <span className="hidden sm:inline">{d.name}</span>
-                    <span className="sm:hidden">
-                      {d.name.split(' ')[0]}
-                    </span>
-                    {isActive && <Check className="h-3 w-3" aria-hidden />}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Active design blurb */}
-          <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-md border border-stone-200 bg-white px-4 py-2.5 text-xs text-stone-600">
-            <span className="inline-flex items-center gap-1 font-semibold text-stone-900">
-              <Eye className="h-3.5 w-3.5" aria-hidden />
-              Previewing: {DESIGNS.find((d) => d.key === active)?.name}
-            </span>
-            <span className="text-stone-300">·</span>
-            <span>{DESIGNS.find((d) => d.key === active)?.desc}</span>
-            <span className="ml-auto inline-flex items-center gap-2">
-              <a
-                href={BUSINESS.phoneHref}
-                className="inline-flex items-center gap-1 text-stone-900 underline-offset-2 hover:underline"
+            <div className="flex items-center gap-1.5">
+              <ServiceEstimator />
+              {/* Compare mode toggle */}
+              <button
+                type="button"
+                onClick={() => setCompareMode((v) => !v)}
+                aria-pressed={compareMode}
+                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors sm:text-sm ${
+                  compareMode
+                    ? 'border-stone-900 bg-stone-900 text-white'
+                    : 'border-stone-300 bg-white text-stone-700 hover:border-stone-900 hover:bg-stone-100'
+                }`}
+                title="Show all three designs stacked vertically (keyboard: C)"
               >
-                <Phone className="h-3 w-3" aria-hidden />
-                {BUSINESS.phone}
-              </a>
-              <ChevronRight className="h-3 w-3 text-stone-300" aria-hidden />
-              <ImageIcon className="h-3 w-3 text-stone-400" aria-hidden />
-              <span>{SEO_KEYWORDS.clusters.length} service keywords wired in</span>
-            </span>
+                <Layers className="h-3.5 w-3.5" aria-hidden />
+                <span className="hidden sm:inline">Compare</span>
+              </button>
+              {/* Collapse banner toggle */}
+              <button
+                type="button"
+                onClick={() => setBannerOpen((v) => !v)}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-stone-300 bg-white text-stone-500 transition-colors hover:border-stone-900 hover:bg-stone-100 hover:text-stone-900"
+                title={`${bannerOpen ? 'Collapse' : 'Expand'} banner (keyboard: B)`}
+                aria-label={bannerOpen ? 'Collapse banner' : 'Expand banner'}
+              >
+                {bannerOpen ? <X className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+              </button>
+            </div>
           </div>
+
+          {/* Design toggle pills + active blurb (collapsible) */}
+          {bannerOpen && (
+            <div className="mt-3 space-y-2.5">
+              <div className="flex flex-wrap items-center gap-1.5">
+                {DESIGNS.map((d) => {
+                  const isActive = d.key === active && !compareMode;
+                  return (
+                    <button
+                      key={d.key}
+                      type="button"
+                      onClick={() => {
+                        setActive(d.key);
+                        setCompareMode(false);
+                      }}
+                      aria-pressed={isActive}
+                      className={`group inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all sm:text-sm ${
+                        isActive
+                          ? 'border-stone-900 bg-stone-900 text-white shadow-sm'
+                          : 'border-stone-300 bg-white text-stone-700 hover:border-stone-900 hover:bg-stone-100'
+                      }`}
+                      title={`Switch to ${d.name} (keyboard: ${d.key === 'modern' ? '1' : d.key === 'portfolio' ? '2' : '3'})`}
+                    >
+                      <span
+                        className={`h-2 w-2 rounded-full ${d.accent}`}
+                        aria-hidden
+                      />
+                      <span className="hidden sm:inline">{d.name}</span>
+                      <span className="sm:hidden">{d.shortLabel}</span>
+                      {isActive && <Check className="h-3 w-3" aria-hidden />}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Active design blurb / keyboard hints */}
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-md border border-stone-200 bg-white px-4 py-2 text-xs text-stone-600">
+                {compareMode ? (
+                  <span className="inline-flex items-center gap-1 font-semibold text-stone-900">
+                    <Layers className="h-3.5 w-3.5" aria-hidden />
+                    Compare mode — all 3 designs stacked below. Press Esc or C to exit.
+                  </span>
+                ) : (
+                  <>
+                    <span className="inline-flex items-center gap-1 font-semibold text-stone-900">
+                      <Eye className="h-3.5 w-3.5" aria-hidden />
+                      Previewing: {activeDesign.name}
+                    </span>
+                    <span className="text-stone-300">·</span>
+                    <span className="hidden md:inline">{activeDesign.desc}</span>
+                  </>
+                )}
+                <span className="ml-auto inline-flex items-center gap-2">
+                  <kbd className="rounded border border-stone-300 bg-stone-100 px-1.5 py-0.5 text-[10px] font-mono text-stone-600">1</kbd>
+                  <kbd className="rounded border border-stone-300 bg-stone-100 px-1.5 py-0.5 text-[10px] font-mono text-stone-600">2</kbd>
+                  <kbd className="rounded border border-stone-300 bg-stone-100 px-1.5 py-0.5 text-[10px] font-mono text-stone-600">3</kbd>
+                  <span className="text-stone-400">switch</span>
+                  <kbd className="rounded border border-stone-300 bg-stone-100 px-1.5 py-0.5 text-[10px] font-mono text-stone-600">C</kbd>
+                  <span className="text-stone-400">compare</span>
+                  <span className="hidden sm:inline text-stone-300">·</span>
+                  <a
+                    href={BUSINESS.phoneHref}
+                    className="hidden sm:inline-flex items-center gap-1 text-stone-900 underline-offset-2 hover:underline"
+                  >
+                    <Phone className="h-3 w-3" aria-hidden />
+                    {BUSINESS.phone}
+                  </a>
+                </span>
+              </div>
+              <p className="text-[10px] text-stone-400">
+                Tip: Press <kbd className="rounded border border-stone-300 bg-stone-100 px-1 font-mono">1</kbd>/<kbd className="rounded border border-stone-300 bg-stone-100 px-1 font-mono">2</kbd>/<kbd className="rounded border border-stone-300 bg-stone-100 px-1 font-mono">3</kbd> to swap designs, <kbd className="rounded border border-stone-300 bg-stone-100 px-1 font-mono">C</kbd> for compare mode, <kbd className="rounded border border-stone-300 bg-stone-100 px-1 font-mono">B</kbd> to collapse this banner. {SEO_KEYWORDS.clusters.length} service keywords wired in.
+              </p>
+            </div>
+          )}
         </div>
       </header>
 
       <main id="main" className="flex-1">
-        <DesignRenderer active={active} />
+        {compareMode ? (
+          <CompareView activeKey={active} onJumpToDesign={(k) => { setActive(k); setCompareMode(false); }} />
+        ) : (
+          <ActiveDesign />
+        )}
       </main>
+
+      {/* ===== Back-to-top button (appears after scrolling) ===== */}
+      <button
+        type="button"
+        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        aria-label="Scroll back to top"
+        className={`fixed bottom-6 right-6 z-50 inline-flex h-11 w-11 items-center justify-center rounded-full bg-stone-900 text-white shadow-lg ring-1 ring-black/10 transition-all hover:bg-stone-800 hover:scale-105 ${
+          scrolled ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none'
+        }`}
+      >
+        <ChevronUp className="h-5 w-5" aria-hidden />
+      </button>
+
+      {/* ===== Mobile floating CTAs (only on small screens) ===== */}
+      <div
+        className={`sm:hidden fixed bottom-0 left-0 right-0 z-50 grid grid-cols-2 gap-px border-t border-stone-200 bg-white/95 backdrop-blur shadow-[0_-2px_10px_rgba(0,0,0,0.06)] transition-transform ${
+          scrolled ? 'translate-y-0' : 'translate-y-full'
+        }`}
+      >
+        <a
+          href={BUSINESS.phoneHref}
+          className="inline-flex items-center justify-center gap-2 py-3.5 text-sm font-semibold text-stone-900 hover:bg-stone-100"
+        >
+          <Phone className="h-4 w-4" aria-hidden />
+          Call Rick
+        </a>
+        <a
+          href="#contact"
+          className="inline-flex items-center justify-center gap-2 bg-amber-500 py-3.5 text-sm font-semibold text-stone-950 hover:bg-amber-400"
+        >
+          <Send className="h-4 w-4" aria-hidden />
+          Free Quote
+        </a>
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================
+   Compare View — render all three designs stacked vertically,
+   separated by labeled dividers so the client can scroll through
+   every concept without toggling. Each divider has a "Jump to
+   this design" button that exits compare mode on that design.
+   ============================================================ */
+function CompareView({
+  activeKey,
+  onJumpToDesign,
+}: {
+  activeKey: DesignKey;
+  onJumpToDesign: (k: DesignKey) => void;
+}) {
+  return (
+    <div>
+      {DESIGNS.map((d, i) => {
+        const Design = DESIGN_MAP[d.key];
+        const isActive = d.key === activeKey;
+        return (
+          <div key={d.key} className="relative">
+            {/* Divider / label between designs */}
+            <div className="sticky top-[56px] z-40 border-y border-stone-900 bg-stone-900 text-stone-50">
+              <div className="mx-auto max-w-7xl px-4 py-2.5 flex items-center gap-3">
+                <span className={`h-2.5 w-2.5 rounded-full ${d.accent}`} aria-hidden />
+                <span className="text-xs font-mono text-stone-400">
+                  Design {i + 1} / {DESIGNS.length}
+                </span>
+                <span className="text-sm font-semibold">{d.name}</span>
+                <span className="hidden sm:inline text-xs text-stone-400">— {d.tag}</span>
+                <button
+                  type="button"
+                  onClick={() => onJumpToDesign(d.key)}
+                  className={`ml-auto inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                    isActive
+                      ? 'border-amber-400 bg-amber-400 text-stone-950'
+                      : 'border-stone-700 bg-stone-800 text-stone-100 hover:bg-stone-700'
+                  }`}
+                >
+                  <Eye className="h-3.5 w-3.5" aria-hidden />
+                  View only this design
+                </button>
+              </div>
+            </div>
+            <Design />
+          </div>
+        );
+      })}
     </div>
   );
 }

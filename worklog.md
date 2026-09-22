@@ -174,3 +174,47 @@ Stage Summary:
 - The component is fully self-contained (renders top-to-bottom including its own footer + Toaster) and consumes the shared data modules. Ready for main agent to wire into src/app/page.tsx via a design switcher.
 - No other files touched. No tests written.
 - Caveats: The lead form is visual only — on submit it shows a Sonner toast and resets; no API call. Gallery masonry relies on natural image dimensions via CSS `columns-1 sm:columns-2 lg:columns-3`, so heights vary organically. Native `<input type="date">` used for the preferred-date field (no Calendar popover). Icons for service tabs are looked up from a small map keyed by the `icon` string field on each service.
+
+---
+Task ID: 4
+Agent: webDevReview (cron round 1)
+Task: Scheduled webDevReview pass — QA the live site, fix any bugs first, then add styling polish + new features.
+
+Work Log:
+- Read worklog.md to absorb prior context (Task IDs 0,1,2-a,2-b,2-c,3). Project ships 3 handyman website mockups (Modern / Portfolio / Trusted) on a single `/` route with a top design-switcher banner, 46 categorized iCloud photos, SEO metadata + JSON-LD, and a 15-min webDevReview cron job.
+- Opened http://localhost:3000 via agent-browser and inspected console: a real hydration mismatch error was firing on every page load. Root cause: `next/dynamic(..., { ssr: true })` for the 3 designs creates a separate React context for the dynamically-imported component, so Radix UI's `useId()` produces different IDs on server vs client (e.g. `radix-_R_haatmlb_` vs `radix-_R_25aatmlb_`). Also captured the Next.js dev-mode cross-origin warning from the sandbox preview host.
+- BUG FIX (high priority): rewrote `src/app/page.tsx` to use STATIC imports for the 3 designs instead of `next/dynamic`. Verified via agent-browser: `agent-browser errors` and `agent-browser console` are now BOTH empty after a fresh reload — hydration error is gone. (Trade-off: all 3 designs ship to the client; only the active one renders, so React's `useId` stays stable. Bundle is ~3600 lines + shared deps — acceptable for a marketing site / mockup review tool.)
+- DEV-WARNING FIX: added `allowedDevOrigins: ['preview-chat-*.space-z.ai', '*.space-z.ai', 'localhost:3000', '127.0.0.1:3000']` to `next.config.ts` to silence the cross-origin HMR warning produced by the sandbox preview host.
+- STYLING POLISH (globals.css): added custom-scrollbar utility (`.scrollbar-thin`), image blur-up placeholder shimmer (`.img-placeholder`), scroll-progress keyframe, `prefers-reduced-motion` global override, `scroll-padding-top: 88px` so anchor links land below the sticky banner, and a `.bg-grid-texture` utility for hero overlays.
+- NEW FEATURES (page.tsx + service-estimator.tsx):
+  1. **Compare mode** — sticky "Compare" button in the banner + `C` keyboard shortcut renders all 3 designs stacked vertically with sticky dark dividers ("Design 1/3", "Design 2/3", "Design 3/3" + a "View only this design" button per divider). Perfect for client review.
+  2. **Keyboard shortcuts** — `1`/`2`/`3` switch designs, `C` toggles compare, `B` collapses the banner, `Esc` exits compare. Active shortcuts shown as `<kbd>` chips in the banner tip line. Inputs/textareas/selects are excluded so typing in the lead form doesn't trigger shortcuts.
+  3. **Scroll progress bar** — thin gradient bar fixed at the very top of the viewport (amber→orange→emerald) showing scroll position.
+  4. **Back-to-top button** — dark circular button bottom-right that fades in after scrolling 600px; smooth-scrolls to top on click.
+  5. **Mobile floating CTAs** — fixed bottom bar on screens < 640px showing "Call Rick" + amber "Free Quote" buttons; appears only after the user has scrolled (so it doesn't cover the hero CTAs on initial view).
+  6. **Banner collapse** — `B` key or the eye/X button collapses the switcher banner to a single thin bar so the active design fills the viewport.
+  7. **Per-design document.title** — the browser tab updates to e.g. "R&R Handyman Services — Design 1 · Modern Professional" when switching, and to "…— All 3 mockups (compare mode)" in compare mode.
+  8. **Service Cost Estimator Dialog** — new component `src/components/service-estimator.tsx`. Opens from an amber "Estimate Cost" button in the switcher banner. Lets the user pick Trade (Plumbing $120 base / Carpentry $295 / Power Washing $180 base) + Scope (Small ×1 / Medium ×2.4 / Large ×5.2) + Urgency (Standard $0 / Same-day +$90 dispatch) + optional ZIP, then displays a live ±15% price range (e.g. Carpentry + Large + Standard = $1,305 – $1,765). Two CTAs in the dialog: "Get my exact flat-price quote" (closes dialog + scrolls to #contact) and a "Call (555) 014-2837" tel link. Math verified. Uses shadcn Dialog + Select + Label + Input.
+- Lint: `bun run lint` clean (0 errors, 0 warnings) after all changes.
+- QA screenshots saved under `/home/z/my-project/download/qa/`:
+  - `modern-initial.png`, `portfolio-initial.png`, `trusted-initial.png` — full-page screenshots of each design (post-fix)
+  - `compare-mode.png` — compare mode with 3 sticky dividers
+  - `scrolled-down.png` — back-to-top button visible bottom-right after scroll
+  - `mobile-floating-cta.png` — mobile bottom CTA bar visible
+  - `estimator-dialog-3.png` — estimator dialog open with all controls
+  - `estimator-carpentry-large.png` — estimator showing $1,305 – $1,765 for Carpentry + Large
+  - `new-banner.png` / `new-banner-mobile.png` — the redesigned switcher banner (desktop + mobile)
+
+Stage Summary:
+- Critical bug fixed: Radix `useId` hydration mismatch eliminated by switching from `next/dynamic` to static imports. Console is now clean on every page load (verified via `agent-browser errors` and `agent-browser console`).
+- Dev-only cross-origin warning silenced via `next.config.ts allowedDevOrigins`.
+- 8 new user-facing features added (compare mode, keyboard shortcuts, scroll progress, back-to-top, mobile floating CTAs, banner collapse, per-design doc title, interactive price estimator).
+- Styling polish: custom scrollbar, image shimmer placeholder, reduced-motion support, scroll-padding for the sticky banner.
+- All features verified end-to-end with agent-browser on desktop (1280×800) and mobile (390×800).
+- Project status: STABLE — production-ready mockups with extra client-review tooling.
+- Recommended next-phase priorities (for the next webDevReview round, if needed):
+  1. Replace placeholder business details in `src/lib/business-info.ts` (phone/email/license) with Rick's real info before going live.
+  2. Consider wiring the lead form + service estimator to a real API route (or Zapier webhook) so submissions actually email Rick.
+  3. Add per-design OpenGraph image variants so the active design's hero is what gets shared.
+  4. Add a sitemap.xml + robots.txt update for the live domain.
+  5. Consider a 4th design variant if the client wants more options (e.g. "modern light" or "premium dark").
