@@ -310,7 +310,7 @@ function Hero() {
               className="bg-blue-600 text-stone-50 hover:bg-blue-700 hover:ring-2 hover:ring-yellow-400 hover:ring-offset-2"
             >
               <a href="#contact">
-                Tell Rick What You Need
+                Tell me what you need
                 <ArrowRight className="size-4" />
               </a>
             </Button>
@@ -526,7 +526,7 @@ function Services() {
                       href="#contact"
                       className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-blue-700 transition-colors hover:text-blue-800"
                     >
-                      Ask Rick about {service.label.toLowerCase()}
+                      Ask me about {service.label.toLowerCase()}
                       <ArrowRight className="size-4" />
                     </a>
                   </div>
@@ -735,7 +735,7 @@ function ProjectGallery() {
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
 
   const sources = useMemo(
-    () => GALLERY_BY_CATEGORY[filter] ?? GALLERY_BY_CATEGORY.all,
+    () => (GALLERY_BY_CATEGORY[filter] ?? GALLERY_BY_CATEGORY.all).slice(0, 9),
     [filter],
   );
   const activeCaption = lightboxSrc ? captionFor(lightboxSrc) : null;
@@ -878,7 +878,7 @@ function HowRickWorks() {
   const steps = [
     {
       icon: Phone,
-      title: 'Tell Rick what\u2019s broken',
+      title: 'Tell me what\u2019s broken',
       body: `Call or text me at ${BUSINESS.phone}. I'll ask a few questions and give you a flat, upfront price — usually on the spot.`,
     },
     {
@@ -1088,10 +1088,10 @@ function LeadForm() {
       <div className="mx-auto grid max-w-7xl items-start gap-12 px-6 md:grid-cols-2 md:gap-16">
         <Reveal>
           <p className="text-sm font-semibold uppercase tracking-widest text-yellow-600">
-            Tell Rick
+            Tell me
           </p>
           <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-            Tell Rick what you need.
+            Tell me what you need.
           </h2>
           <p className="mt-4 max-w-md text-lg leading-relaxed text-stone-700">
             Drop your info below and Rick will call you back within 24 hours —
@@ -1138,7 +1138,7 @@ function LeadForm() {
           <Card className="border-stone-300 bg-white p-6 shadow-lg md:p-8">
             <CardHeader className="px-0 pt-0">
               <CardTitle className="font-serif text-2xl text-slate-900">
-                Send Rick a message
+                Send me a message
               </CardTitle>
               <CardDescription className="text-stone-600">
                 No obligation. Rick replies himself — usually the same day.
@@ -1205,7 +1205,7 @@ function LeadForm() {
                       id="final-service"
                       className="w-full border-stone-300 bg-stone-50 focus-visible:border-blue-600 focus-visible:ring-blue-600/30"
                     >
-                      <SelectValue placeholder="Pick a trade — or ask Rick" />
+                      <SelectValue placeholder="Pick a trade — or ask me" />
                     </SelectTrigger>
                     <SelectContent className="border-stone-300 bg-white">
                       <SelectItem value="power-washing">Power Washing</SelectItem>
@@ -1244,7 +1244,7 @@ function LeadForm() {
                   ) : (
                     <>
                       <Send className="size-4" />
-                      Send Rick a Message
+                      Send me a message
                     </>
                   )}
                 </Button>
