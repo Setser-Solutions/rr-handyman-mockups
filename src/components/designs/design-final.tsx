@@ -258,6 +258,10 @@ function TopNav() {
 /* -------------------------------------------------------------------------- */
 
 function Hero() {
+  const [showAfter, setShowAfter] = useState(false);
+  const beforeImg = "/handyman-photos/img_032.jpg";
+  const afterImg = "/handyman-photos/img_009.jpg";
+
   return (
     <section
       aria-label="Rick Rodriguez introduction"
@@ -356,19 +360,22 @@ function Hero() {
           className="relative order-1 min-h-[60vh] bg-stone-200 md:order-2 md:min-h-0"
         >
           <img
-            src={HERO_PICKS.power_washing}
-            alt="Concrete patio power wash showing a clean half next to a dirty half — the before-and-after difference"
-            className="absolute inset-0 size-full object-cover"
+            src={showAfter ? afterImg : beforeImg}
+            alt={showAfter
+              ? "Concrete patio after pressure washing — a clean surface next to the unwashed area"
+              : "A dirty concrete patio before pressure washing — covered in grime and stains"}
+            className="absolute inset-0 size-full object-cover transition-opacity duration-500"
             loading="eager"
           />
-          <a
-            href="#spotlight"
-            aria-label="See the before and after project spotlight"
+          <button
+            type="button"
+            onClick={() => setShowAfter((v) => !v)}
+            aria-label={showAfter ? "Show the before photo" : "Show the after photo"}
             className="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-yellow-400 px-3 py-1.5 text-xs font-bold text-slate-900 shadow-lg transition-transform hover:scale-105"
           >
             <Camera className="size-3.5" />
-            Before / After
-          </a>
+            {showAfter ? 'Show Before' : 'Show After'}
+          </button>
 
           {/* Overlapping owner card */}
           <Card className="absolute -bottom-5 left-4 max-w-[16rem] border-stone-300 bg-stone-50/95 p-4 shadow-lg backdrop-blur md:-left-6">
