@@ -2108,12 +2108,23 @@ export default function AdminLeadsDashboard() {
           <p>
             © {new Date().getFullYear()} {BUSINESS.brand}. Admin dashboard.
           </p>
-          <Link
-            href="/"
-            className="underline-offset-2 hover:text-stone-900 hover:underline"
-          >
-            Back to public site →
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link
+              href="/"
+              className="underline-offset-2 hover:text-stone-900 hover:underline"
+            >
+              Back to public site →
+            </Link>
+            <span className="text-stone-300">·</span>
+            <a
+              href="https://setsersolutions.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-stone-400 transition-colors hover:text-yellow-600"
+            >
+              Setser Solutions
+            </a>
+          </div>
         </div>
       </footer>
 

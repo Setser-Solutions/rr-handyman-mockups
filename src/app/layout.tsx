@@ -20,7 +20,7 @@ const siteUrl = "https://rrhandyman.downriver.com";
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: `${BUSINESS.brand} | Plumbing, Carpentry & Power Washing in ${BUSINESS.primaryCity}`,
+    default: `${BUSINESS.brand} | Power Washing, Carpentry, Electrical & Plumbing in ${BUSINESS.primaryCity}`,
     template: `%s | ${BUSINESS.brand}`,
   },
   description: `${BUSINESS.brand} is ${BUSINESS.primaryCity}'s neighborhood handyman. ${BUSINESS.services
@@ -62,7 +62,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: `${BUSINESS.brand} — ${BUSINESS.primaryCity} Handyman`,
-    description: `Plumbing, carpentry, and power washing done right the first time. 12+ years · 1,850+ jobs · 4.9★ rating. Call ${BUSINESS.phone}.`,
+    description: `Power washing, carpentry, electrical, and plumbing done right the first time. 12+ years · 1,850+ jobs · 4.9★ rating. Call ${BUSINESS.phone}.`,
     url: siteUrl,
     siteName: BUSINESS.brand,
     type: "website",
@@ -73,14 +73,14 @@ export const metadata: Metadata = {
         url: "/api/og?design=trusted",
         width: 1200,
         height: 630,
-        alt: `${BUSINESS.brand} — Plumbing, Carpentry & Power Washing in ${BUSINESS.primaryCity}.`,
+        alt: `${BUSINESS.brand} — Power Washing, Carpentry, Electrical & Plumbing in ${BUSINESS.primaryCity}.`,
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
     title: `${BUSINESS.brand} — ${BUSINESS.primaryCity} Handyman`,
-    description: `Plumbing, carpentry, and power washing done right the first time. Call ${BUSINESS.phone}.`,
+    description: `Power washing, carpentry, electrical, and plumbing done right the first time. Call ${BUSINESS.phone}.`,
     images: ["/api/og?design=trusted"],
   },
   other: {

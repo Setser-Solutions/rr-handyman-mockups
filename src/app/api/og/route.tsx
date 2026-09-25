@@ -39,7 +39,7 @@ const DESIGN_CONFIG: Record<
   },
   default: {
     name: BUSINESS.brand,
-    tag: 'Plumbing · Carpentry · Power Washing',
+    tag: 'Power Washing · Carpentry · Electrical · Plumbing',
     hero: 'img_000.jpg', // multi-level deck
     bg: '#0c0a09',
     accent: '#f59e0b',
@@ -181,7 +181,7 @@ export async function GET(req: Request) {
                 ? 'See the difference.'
                 : design === 'trusted'
                 ? "Hi, I'm Rick — your local handyman."
-                : 'Plumbing · Carpentry · Power Washing'}
+                : 'Power Washing · Carpentry · Electrical · Plumbing'}
             </div>
 
             {/* Stats row */}

@@ -133,7 +133,15 @@ export default function AdminLoginPage() {
         </div>
       </main>
       <footer className="border-t border-stone-200 bg-white py-4 text-center text-xs text-stone-400">
-        © 2026 {BUSINESS.brand} · Admin
+        © {new Date().getFullYear()} {BUSINESS.brand} · Admin ·{' '}
+        <a
+          href="https://setsersolutions.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-stone-400 transition-colors hover:text-yellow-600"
+        >
+          Setser Solutions
+        </a>
       </footer>
     </div>
   );

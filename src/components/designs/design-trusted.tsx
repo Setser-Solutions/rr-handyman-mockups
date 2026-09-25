@@ -428,7 +428,7 @@ function Services() {
             What Rick does
           </p>
           <h2 className="mt-2 text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
-            Three trades, one phone call.
+            Four trades, one phone call.
           </h2>
           <p className="mt-3 text-lg text-stone-600">
             No sub-contractors, no runaround. You call Rick, Rick does the work.
@@ -1154,7 +1154,7 @@ function Footer() {
               <p className="font-serif text-lg italic text-stone-50">Rick Rodriguez</p>
             </div>
             <p className="mt-3 text-sm leading-relaxed">
-              {BUSINESS.brand} — plumbing, carpentry, and power washing done right,
+              {BUSINESS.brand} — power washing, carpentry, electrical, and plumbing done right,
               by a guy who actually shows up.
             </p>
             <p className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-stone-300">

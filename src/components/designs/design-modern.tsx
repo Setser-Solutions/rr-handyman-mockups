@@ -432,7 +432,7 @@ export default function DesignModern() {
                 id="services-heading"
                 className="mt-3 text-3xl font-bold tracking-tight text-stone-900 md:text-4xl"
               >
-                Three trades. One phone call.
+                Four trades. One phone call.
               </h2>
               <p className="mt-4 text-stone-500">
                 From a leaking faucet to a brand-new front porch, R&amp;R

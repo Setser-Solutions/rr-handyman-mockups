@@ -403,7 +403,7 @@ export default function DesignPortfolio() {
                 id="services-heading"
                 className="text-3xl md:text-5xl font-bold text-stone-900 tracking-tight"
               >
-                Three trades, hundreds of transformations.
+                Four trades, hundreds of transformations.
               </h2>
             </motion.div>
 

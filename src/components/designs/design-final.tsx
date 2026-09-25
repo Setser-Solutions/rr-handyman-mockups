@@ -160,7 +160,7 @@ function TopNav() {
       >
         {/* Brand */}
         <a href="#main" className="group flex items-center gap-3">
-          <span className="flex size-10 items-center justify-center rounded-full bg-blue-600 text-stone-50 shadow-sm transition-transform group-hover:scale-105">
+          <span className="flex size-10 items-center justify-center rounded-full bg-yellow-400 text-slate-900 shadow-sm transition-transform group-hover:scale-105">
             <Hammer className="size-5" />
           </span>
           <span className="flex flex-col leading-tight">
@@ -191,7 +191,7 @@ function TopNav() {
         <div className="flex items-center gap-2">
           <Button
             asChild
-            className="hidden bg-blue-600 text-stone-50 hover:bg-blue-700 sm:inline-flex"
+            className="hidden bg-blue-600 text-stone-50 hover:bg-blue-700 hover:ring-2 hover:ring-yellow-400 hover:ring-offset-2 sm:inline-flex"
           >
             <a href={BUSINESS.phoneHref}>
               <Phone className="size-4" />
@@ -236,7 +236,7 @@ function TopNav() {
                 <SheetClose asChild>
                   <Button
                     asChild
-                    className="w-full bg-blue-600 text-stone-50 hover:bg-blue-700"
+                    className="w-full bg-blue-600 text-stone-50 hover:bg-blue-700 hover:ring-2 hover:ring-yellow-400 hover:ring-offset-2"
                   >
                     <a href={BUSINESS.phoneHref}>
                       <Phone className="size-4" />
@@ -303,7 +303,7 @@ function Hero() {
             <Button
               asChild
               size="lg"
-              className="bg-blue-600 text-stone-50 hover:bg-blue-700"
+              className="bg-blue-600 text-stone-50 hover:bg-blue-700 hover:ring-2 hover:ring-yellow-400 hover:ring-offset-2"
             >
               <a href="#contact">
                 Tell Rick What You Need
@@ -478,7 +478,7 @@ function Services() {
                       loading="lazy"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-slate-900/0 to-transparent" />
-                    <Badge className="absolute left-3 top-3 border-blue-200 bg-stone-50/95 text-blue-700 hover:bg-stone-50/95">
+                    <Badge className="absolute left-3 top-3 border-yellow-300 bg-stone-50/95 text-yellow-700 hover:bg-stone-50/95">
                       {service.label}
                     </Badge>
                     <div className="absolute bottom-3 right-3 rounded-full bg-yellow-400 px-3 py-1 text-xs font-bold text-slate-900">
@@ -488,7 +488,7 @@ function Services() {
 
                   <div className="flex h-full flex-col p-6">
                     <div className="mb-3 flex items-center gap-2">
-                      <span className="flex size-9 items-center justify-center rounded-full bg-blue-100 text-blue-700">
+                      <span className="flex size-9 items-center justify-center rounded-full bg-yellow-100 text-yellow-700">
                         <Icon className="size-5" />
                       </span>
                       <h3 className="text-xl font-semibold text-slate-900">
@@ -505,7 +505,7 @@ function Services() {
                           key={b}
                           className="flex items-start gap-2 text-sm text-stone-700"
                         >
-                          <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-blue-600" />
+                          <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-yellow-600" />
                           <span>{b}</span>
                         </li>
                       ))}
@@ -672,7 +672,7 @@ function CaseStudySpotlight() {
           <div className="mt-7">
             <Button
               asChild
-              className="bg-blue-600 text-stone-50 hover:bg-blue-700"
+              className="bg-blue-600 text-stone-50 hover:bg-blue-700 hover:ring-2 hover:ring-yellow-400 hover:ring-offset-2"
             >
               <a href="#contact">
                 Request a deck quote
@@ -806,7 +806,7 @@ function ProjectGallery() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-900/85 via-slate-900/20 to-transparent" />
                   <div className="absolute inset-x-0 bottom-0 p-4">
-                    <Badge className="mb-2 border-blue-200 bg-stone-50/95 text-blue-700 hover:bg-stone-50/95">
+                    <Badge className="mb-2 border-yellow-300 bg-stone-50/95 text-yellow-700 hover:bg-stone-50/95">
                       {filterLabel}
                     </Badge>
                     <p className="text-sm font-semibold text-stone-50">
@@ -908,7 +908,7 @@ function HowRickWorks() {
                   {i + 1}
                 </div>
                 <div className="mt-4 flex justify-center">
-                  <span className="flex size-10 items-center justify-center rounded-full bg-blue-100 text-blue-700">
+                  <span className="flex size-10 items-center justify-center rounded-full bg-yellow-100 text-yellow-700">
                     <step.icon className="size-5" />
                   </span>
                 </div>
@@ -1092,7 +1092,7 @@ function LeadForm() {
             {contactRows.map((row) => {
               const inner = (
                 <>
-                  <span className="flex size-10 items-center justify-center rounded-full bg-blue-100 text-blue-700">
+                  <span className="flex size-10 items-center justify-center rounded-full bg-yellow-100 text-yellow-700">
                     <row.icon className="size-5" />
                   </span>
                   <span className="flex flex-col">
@@ -1223,7 +1223,7 @@ function LeadForm() {
                   type="submit"
                   size="lg"
                   disabled={submitting}
-                  className="w-full bg-blue-600 text-stone-50 hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="w-full bg-blue-600 text-stone-50 hover:bg-blue-700 hover:ring-2 hover:ring-yellow-400 hover:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {submitting ? (
                     <>
@@ -1318,7 +1318,7 @@ function ServiceArea() {
                 </p>
                 <Button
                   asChild
-                  className="mt-6 bg-blue-600 text-stone-50 hover:bg-blue-700"
+                  className="mt-6 bg-blue-600 text-stone-50 hover:bg-blue-700 hover:ring-2 hover:ring-yellow-400 hover:ring-offset-2"
                 >
                   <a href={BUSINESS.phoneHref}>
                     <Phone className="size-4" />
@@ -1366,7 +1366,7 @@ function FinalCTA() {
             <Button
               asChild
               size="lg"
-              className="bg-blue-600 text-stone-50 hover:bg-blue-700"
+              className="bg-blue-600 text-stone-50 hover:bg-blue-700 hover:ring-2 hover:ring-yellow-400 hover:ring-offset-2"
             >
               <a href={BUSINESS.phoneHref}>
                 <Phone className="size-4" />
@@ -1406,7 +1406,7 @@ function Footer() {
           {/* Brand */}
           <div>
             <div className="flex items-center gap-3">
-              <span className="flex size-9 items-center justify-center rounded-full bg-blue-600 text-stone-50">
+              <span className="flex size-9 items-center justify-center rounded-full bg-yellow-400 text-slate-900">
                 <Hammer className="size-4" />
               </span>
               <p className="font-serif text-lg italic text-stone-50">
@@ -1414,7 +1414,7 @@ function Footer() {
               </p>
             </div>
             <p className="mt-3 text-sm leading-relaxed">
-              {BUSINESS.brand} — plumbing, carpentry, and power washing done
+              {BUSINESS.brand} — power washing, carpentry, electrical, and plumbing done
               right, by a guy who actually shows up.
             </p>
             <p className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-stone-300">
@@ -1502,7 +1502,17 @@ function Footer() {
           <p>
             © {CURRENT_YEAR} {BUSINESS.brand}. All rights reserved.
           </p>
-          <p>Website by Setser Solutions</p>
+          <p>
+            Website by{' '}
+            <a
+              href="https://setsersolutions.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-stone-400 transition-colors hover:text-yellow-500"
+            >
+              Setser Solutions
+            </a>
+          </p>
         </div>
       </div>
     </footer>
