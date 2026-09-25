@@ -28,7 +28,6 @@ export const BUSINESS = {
     "Rockwood",
     "South Rockwood",
     "Carleton",
-    "New Boston",
   ],
   hours: {
     weekdays: "Mon–Fri: 7:00 AM – 6:00 PM",
