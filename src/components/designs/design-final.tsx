@@ -694,6 +694,77 @@ function CaseStudySpotlight() {
 }
 
 /* -------------------------------------------------------------------------- */
+/*                       Deck Rebuild Before/After                            */
+/* -------------------------------------------------------------------------- */
+
+function DeckRebuildBeforeAfter() {
+  const [showAfter, setShowAfter] = useState(false);
+  const beforeImg = '/handyman-photos/img_001.jpg';
+  const afterImg = '/handyman-photos/img_000.jpg';
+
+  return (
+    <section className="bg-white py-20 md:py-28">
+      <div className="mx-auto max-w-7xl px-6">
+        <Reveal className="mx-auto max-w-2xl text-center">
+          <p className="text-sm font-semibold uppercase tracking-widest text-yellow-600">
+            Before &amp; After
+          </p>
+          <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+            Deck rebuild: old and damaged to brand new.
+          </h2>
+          <p className="mt-3 text-base text-stone-600">
+            Tap the button to see the difference a full deck rebuild makes.
+          </p>
+        </Reveal>
+
+        <motion.div
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: '-60px' }}
+          variants={fadeUp}
+          className="relative mx-auto mt-10 max-w-4xl overflow-hidden rounded-2xl border border-stone-300 shadow-xl"
+        >
+          <img
+            src={showAfter ? afterImg : beforeImg}
+            alt={showAfter
+              ? 'A newly constructed multi-level wooden deck attached to the back of a brick house'
+              : 'An old, weathered, and damaged wooden deck attached to a brick house in need of repair'}
+            className="aspect-[4/3] w-full object-cover transition-opacity duration-500"
+            loading="lazy"
+          />
+          <button
+            type="button"
+            onClick={() => setShowAfter((v) => !v)}
+            aria-label={showAfter ? 'Show the before photo' : 'Show the after photo'}
+            className="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-yellow-400 px-3 py-1.5 text-xs font-bold text-slate-900 shadow-lg transition-transform hover:scale-105"
+          >
+            <Camera className="size-3.5" />
+            {showAfter ? 'Show Before' : 'Show After'}
+          </button>
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-slate-900/80 to-transparent p-4">
+            <p className="text-sm font-semibold text-stone-50">
+              {showAfter ? 'After: New multi-level deck with railing and stairs' : 'Before: Old, weathered, damaged deck needing full replacement'}
+            </p>
+          </div>
+        </motion.div>
+
+        <div className="mt-6 text-center">
+          <Button
+            asChild
+            className="bg-blue-600 text-stone-50 hover:bg-blue-700 hover:ring-2 hover:ring-yellow-400 hover:ring-offset-2"
+          >
+            <a href="#contact">
+              Get a deck rebuild quote
+              <ArrowRight className="size-4" />
+            </a>
+          </Button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
 /*                            Project gallery                                  */
 /* -------------------------------------------------------------------------- */
 
@@ -1553,6 +1624,7 @@ export default function DesignFinal() {
         <Services />
         <MeetRick />
         <CaseStudySpotlight />
+        <DeckRebuildBeforeAfter />
         <ProjectGallery />
         <HowRickWorks />
         <Testimonials />
