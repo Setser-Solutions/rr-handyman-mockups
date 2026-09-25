@@ -79,6 +79,11 @@ export default function Home() {
         <ChevronUp className="h-5 w-5" aria-hidden />
       </button>
 
+      {/* ===== Desktop Estimate button (bottom-left, desktop only) ===== */}
+      <div className="hidden sm:block fixed bottom-6 left-6 z-40">
+        <ServiceEstimator />
+      </div>
+
       {/* ===== Mobile floating CTAs (only on small screens) ===== */}
       <div
         className={`sm:hidden fixed bottom-0 left-0 right-0 z-40 grid grid-cols-3 gap-px border-t border-stone-200 bg-white/95 backdrop-blur shadow-[0_-2px_10px_rgba(0,0,0,0.06)] transition-all duration-300 ${

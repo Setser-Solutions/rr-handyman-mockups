@@ -274,14 +274,19 @@ export function ServiceEstimator() {
 
           {/* CTAs */}
           <div className="flex flex-col gap-2 sm:flex-row">
-            <a
-              href="#contact"
-              onClick={() => setOpen(false)}
+            <button
+              type="button"
+              onClick={() => {
+                setOpen(false);
+                setTimeout(() => {
+                  document.querySelector('#contact')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+              }}
               className="inline-flex flex-1 items-center justify-center gap-2 rounded-md bg-yellow-500 px-4 py-2.5 text-sm font-semibold text-stone-950 transition-colors hover:bg-yellow-300"
             >
               <DollarSign className="h-4 w-4" aria-hidden />
               Get my exact flat-price quote
-            </a>
+            </button>
             <a
               href={BUSINESS.phoneHref}
               className="inline-flex flex-1 items-center justify-center gap-2 rounded-md border border-stone-300 bg-white px-4 py-2.5 text-sm font-semibold text-stone-900 transition-colors hover:border-stone-900 hover:bg-stone-100"
