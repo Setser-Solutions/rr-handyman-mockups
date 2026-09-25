@@ -1,0 +1,1168 @@
+     1→'use client';
+     2→
+     3→import { useState } from 'react';
+     4→import { motion, type Variants } from 'framer-motion';
+     5→import {
+     6→  Droplets,
+     7→  Hammer,
+     8→  SprayCan,
+     9→  Phone,
+    10→  Star,
+    11→  ArrowRight,
+    12→  CheckCircle2,
+    13→  MapPin,
+    14→  Clock,
+    15→  Mail,
+    16→  ShieldCheck,
+    17→  Wrench,
+    18→  Menu,
+    19→  Calendar,
+    20→  Send,
+    21→  Camera,
+    22→  Images,
+    23→  Quote,
+    24→  Loader2,
+    25→} from 'lucide-react';
+    26→
+    27→import { Button } from '@/components/ui/button';
+    28→import { Badge } from '@/components/ui/badge';
+    29→import { Card, CardContent } from '@/components/ui/card';
+    30→import { useLeadForm } from '@/hooks/use-lead-form';
+    31→import {
+    32→  Tabs,
+    33→  TabsList,
+    34→  TabsTrigger,
+    35→  TabsContent,
+    36→} from '@/components/ui/tabs';
+    37→import {
+    38→  Dialog,
+    39→  DialogContent,
+    40→  DialogHeader,
+    41→  DialogTitle,
+    42→  DialogDescription,
+    43→} from '@/components/ui/dialog';
+    44→import {
+    45→  Sheet,
+    46→  SheetContent,
+    47→  SheetTrigger,
+    48→  SheetTitle,
+    49→} from '@/components/ui/sheet';
+    50→import {
+    51→  Select,
+    52→  SelectTrigger,
+    53→  SelectValue,
+    54→  SelectContent,
+    55→  SelectItem,
+    56→} from '@/components/ui/select';
+    57→import { Input } from '@/components/ui/input';
+    58→import { Textarea } from '@/components/ui/textarea';
+    59→import { Label } from '@/components/ui/label';
+    60→import {
+    61→  Accordion,
+    62→  AccordionItem,
+    63→  AccordionTrigger,
+    64→  AccordionContent,
+    65→} from '@/components/ui/accordion';
+    66→
+    67→import {
+    68→  HERO_PICKS,
+    69→  GALLERY_BY_CATEGORY,
+    70→  captionFor,
+    71→} from '@/lib/handyman-photos';
+    72→import { BUSINESS, TESTIMONIALS, FAQS } from '@/lib/business-info';
+    73→
+    74→export const DESIGN_ID = 'portfolio';
+    75→export const DESIGN_NAME = 'Before/After Portfolio';
+    76→
+    77→const CURRENT_YEAR = new Date().getFullYear();
+    78→
+    79→const ICONS = { Droplets, Hammer, SprayCan } as const;
+    80→
+    81→const NAV_LINKS = [
+    82→  { label: 'Work', id: 'gallery' },
+    83→  { label: 'Services', id: 'services' },
+    84→  { label: 'Reviews', id: 'reviews' },
+    85→  { label: 'FAQ', id: 'faq' },
+    86→  { label: 'Contact', id: 'contact' },
+    87→] as const;
+    88→
+    89→type GalleryFilter = keyof typeof GALLERY_BY_CATEGORY;
+    90→
+    91→const FILTERS: { label: string; value: GalleryFilter }[] = [
+    92→  { label: 'All', value: 'all' },
+    93→  { label: 'Plumbing', value: 'plumbing' },
+    94→  { label: 'Carpentry', value: 'carpentry' },
+    95→  { label: 'Power Washing', value: 'power_washing' },
+    96→  { label: 'Finished', value: 'finished_work' },
+    97→];
+    98→
+    99→const FILTER_BADGE_LABEL: Record<GalleryFilter, string> = {
+   100→  all: 'Project',
+   101→  plumbing: 'Plumbing',
+   102→  carpentry: 'Carpentry',
+   103→  power_washing: 'Power Washing',
+   104→  finished_work: 'Finished Work',
+   105→  before_after: 'Before/After',
+   106→  other: 'Detail',
+   107→};
+   108→
+   109→const fadeUp: Variants = {
+   110→  hidden: { opacity: 0, y: 24 },
+   111→  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } },
+   112→};
+   113→
+   114→const fadeIn: Variants = {
+   115→  hidden: { opacity: 0 },
+   116→  visible: { opacity: 1, transition: { duration: 0.4, ease: 'easeOut' } },
+   117→};
+   118→
+   119→const viewportOnce = { once: true, margin: '-80px' as const };
+   120→
+   121→function scrollToId(id: string) {
+   122→  if (typeof document === 'undefined') return;
+   123→  const el = document.getElementById(id);
+   124→  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+   125→}
+   126→
+   127→function serviceIdToFilter(id: string): GalleryFilter {
+   128→  if (id === 'power-washing') return 'power_washing';
+   129→  return id as GalleryFilter;
+   130→}
+   131→
+   132→export default function DesignPortfolio() {
+   133→  const [galleryFilter, setGalleryFilter] = useState<GalleryFilter>('all');
+   134→  const [lightbox, setLightbox] = useState<string | null>(null);
+   135→  const [serviceNeeded, setServiceNeeded] = useState('');
+   136→  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+   137→
+   138→  const galleryPhotos: string[] =
+   139→    GALLERY_BY_CATEGORY[galleryFilter] ?? GALLERY_BY_CATEGORY.all;
+   140→
+   141→  function handleServiceGalleryClick(serviceId: string) {
+   142→    setGalleryFilter(serviceIdToFilter(serviceId));
+   143→    scrollToId('gallery');
+   144→  }
+   145→
+   146→  const { submit: handleSubmit, submitting } = useLeadForm({
+   147→    design: 'portfolio',
+   148→    successTitle: 'Quote request received.',
+   149→    successDescription: 'Rick will reach out within 24 hours.',
+   150→    onAfterSubmit: () => setServiceNeeded(''),
+   151→  });
+   152→
+   153→  return (
+   154→    <div className="min-h-screen flex flex-col bg-white text-stone-900">
+   155→      <a
+   156→        href="#main"
+   157→        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:rounded-md focus:bg-emerald-600 focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-white"
+   158→      >
+   159→        Skip to content
+   160→      </a>
+   161→
+   162→      {/* ===== NAV ===== */}
+   163→      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-stone-200">
+   164→        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
+   165→          <a href="#main" className="flex items-center gap-3 shrink-0">
+   166→            <span
+   167→              aria-hidden="true"
+   168→              className="grid place-items-center h-10 w-10 rounded-md bg-emerald-600 text-white font-bold text-xs tracking-tight"
+   169→            >
+   170→              R&amp;R
+   171→            </span>
+   172→            <span className="font-semibold text-stone-900 tracking-tight text-sm sm:text-base">
+   173→              {BUSINESS.brand}
+   174→            </span>
+   175→          </a>
+   176→
+   177→          <nav
+   178→            className="hidden md:flex items-center gap-7"
+   179→            aria-label="Primary"
+   180→          >
+   181→            {NAV_LINKS.map((l) => (
+   182→              <button
+   183→                key={l.id}
+   184→                type="button"
+   185→                onClick={() => scrollToId(l.id)}
+   186→                className="text-sm font-medium text-stone-600 hover:text-emerald-700 transition-colors"
+   187→              >
+   188→                {l.label}
+   189→              </button>
+   190→            ))}
+   191→          </nav>
+   192→
+   193→          <div className="hidden md:flex items-center gap-2">
+   194→            <Button variant="outline" asChild className="border-stone-200">
+   195→              <a href={BUSINESS.phoneHref}>
+   196→                <Phone className="size-4" />
+   197→                Call
+   198→              </a>
+   199→            </Button>
+   200→            <Button
+   201→              type="button"
+   202→              onClick={() => scrollToId('contact')}
+   203→              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+   204→            >
+   205→              Get a Quote
+   206→              <ArrowRight className="size-4" />
+   207→            </Button>
+   208→          </div>
+   209→
+   210→          <div className="md:hidden">
+   211→            <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
+   212→              <SheetTrigger asChild>
+   213→                <Button variant="ghost" size="icon" aria-label="Open menu">
+   214→                  <Menu className="size-5" />
+   215→                </Button>
+   216→              </SheetTrigger>
+   217→              <SheetContent side="right" className="w-[88vw] max-w-sm bg-white">
+   218→                <SheetTitle className="px-4 pt-2 text-stone-900">
+   219→                  {BUSINESS.brand}
+   220→                </SheetTitle>
+   221→                <nav
+   222→                  className="flex flex-col gap-1 px-4"
+   223→                  aria-label="Mobile primary"
+   224→                >
+   225→                  {NAV_LINKS.map((l) => (
+   226→                    <button
+   227→                      key={l.id}
+   228→                      type="button"
+   229→                      onClick={() => {
+   230→                        scrollToId(l.id);
+   231→                        setMobileNavOpen(false);
+   232→                      }}
+   233→                      className="text-left text-base font-medium text-stone-700 hover:text-emerald-700 transition-colors py-3 border-b border-stone-100"
+   234→                    >
+   235→                      {l.label}
+   236→                    </button>
+   237→                  ))}
+   238→                </nav>
+   239→                <div className="flex flex-col gap-2 px-4 mt-4">
+   240→                  <Button
+   241→                    variant="outline"
+   242→                    asChild
+   243→                    className="border-stone-200 w-full"
+   244→                  >
+   245→                    <a href={BUSINESS.phoneHref}>
+   246→                      <Phone className="size-4" />
+   247→                      {BUSINESS.phone}
+   248→                    </a>
+   249→                  </Button>
+   250→                  <Button
+   251→                    type="button"
+   252→                    onClick={() => {
+   253→                      scrollToId('contact');
+   254→                      setMobileNavOpen(false);
+   255→                    }}
+   256→                    className="bg-emerald-600 hover:bg-emerald-700 text-white w-full"
+   257→                  >
+   258→                    Get a Quote
+   259→                    <ArrowRight className="size-4" />
+   260→                  </Button>
+   261→                </div>
+   262→              </SheetContent>
+   263→            </Sheet>
+   264→          </div>
+   265→        </div>
+   266→      </header>
+   267→
+   268→      <main id="main" className="flex-1">
+   269→        {/* ===== HERO ===== */}
+   270→        <section aria-label="Hero" className="relative bg-white">
+   271→          <div className="grid md:grid-cols-2 md:min-h-[88vh]">
+   272→            <div className="px-6 py-16 md:py-20 flex flex-col justify-center gap-6 max-w-xl mx-auto md:mx-0">
+   273→              <Badge className="bg-emerald-50 text-emerald-700 border-emerald-100 w-fit gap-1.5 px-3 py-1">
+   274→                <MapPin className="size-3" />
+   275→                {BUSINESS.serviceArea.split('&')[0].trim()} · {BUSINESS.avgRating}
+   276→                ★
+   277→              </Badge>
+   278→
+   279→              <h1 className="text-4xl md:text-6xl font-bold text-stone-900 tracking-tight leading-[1.05]">
+   280→                See the difference. Then call the guy who made it.
+   281→              </h1>
+   282→
+   283→              <p className="text-base md:text-lg text-stone-600 leading-relaxed">
+   284→                From{' '}
+   285→                <strong className="font-semibold text-stone-900">plumbing</strong>{' '}
+   286→                fixes and{' '}
+   287→                <strong className="font-semibold text-stone-900">carpentry</strong>{' '}
+   288→                builds to dramatic{' '}
+   289→                <strong className="font-semibold text-stone-900">
+   290→                  power washing
+   291→                </strong>{' '}
+   292→                makeovers, every R&amp;R job comes with a before/after
+   293→                you&apos;ll want to show the neighbors.
+   294→              </p>
+   295→
+   296→              <div className="flex flex-wrap gap-3">
+   297→                <Button
+   298→                  type="button"
+   299→                  size="lg"
+   300→                  onClick={() => scrollToId('gallery')}
+   301→                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
+   302→                >
+   303→                  View Our Work
+   304→                  <Images className="size-4" />
+   305→                </Button>
+   306→                <Button
+   307→                  type="button"
+   308→                  size="lg"
+   309→                  variant="outline"
+   310→                  onClick={() => scrollToId('contact')}
+   311→                  className="border-stone-300 text-stone-800"
+   312→                >
+   313→                  Get a Free Quote
+   314→                  <ArrowRight className="size-4" />
+   315→                </Button>
+   316→              </div>
+   317→
+   318→              <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-stone-500 pt-2">
+   319→                <span className="flex items-center gap-1.5">
+   320→                  <CheckCircle2 className="size-4 text-emerald-600" />{' '}
+   321→                  {BUSINESS.yearsInBusiness}+ yrs
+   322→                </span>
+   323→                <span className="flex items-center gap-1.5">
+   324→                  <CheckCircle2 className="size-4 text-emerald-600" />{' '}
+   325→                  {BUSINESS.jobsCompleted.toLocaleString()}+ jobs
+   326→                </span>
+   327→                <span className="flex items-center gap-1.5">
+   328→                  <CheckCircle2 className="size-4 text-emerald-600" /> Same-day
+   329→                  estimates
+   330→                </span>
+   331→              </div>
+   332→            </div>
+   333→
+   334→            <div className="relative bg-stone-100 min-h-[60vh] md:min-h-0">
+   335→              <img
+   336→                src={HERO_PICKS.power_washing}
+   337→                alt="Patio power wash before and after showing half-cleaned concrete next to the unwashed section"
+   338→                className="absolute inset-0 w-full h-full object-cover"
+   339→              />
+   340→              <Badge className="absolute top-4 left-4 bg-emerald-600 text-white border-transparent gap-1.5 px-3 py-1.5 text-xs shadow-lg">
+   341→                <Camera className="size-3.5" />
+   342→                Before / After
+   343→              </Badge>
+   344→            </div>
+   345→          </div>
+   346→        </section>
+   347→
+   348→        {/* ===== STATS BAND ===== */}
+   349→        <section
+   350→          aria-label="Key stats"
+   351→          className="bg-stone-900 text-stone-50 py-12"
+   352→        >
+   353→          <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8">
+   354→            {[
+   355→              { value: `${BUSINESS.yearsInBusiness}+ Years`, label: 'In business' },
+   356→              {
+   357→                value: `${BUSINESS.jobsCompleted.toLocaleString()}+ Jobs`,
+   358→                label: 'Completed',
+   359→              },
+   360→              {
+   361→                value: `${BUSINESS.avgRating}★ Reviews`,
+   362→                label: `${BUSINESS.reviewCount} verified`,
+   363→              },
+   364→              { value: '24h Response', label: 'On quote requests' },
+   365→            ].map((s) => (
+   366→              <motion.div
+   367→                key={s.label}
+   368→                initial="hidden"
+   369→                whileInView="visible"
+   370→                viewport={viewportOnce}
+   371→                variants={fadeUp}
+   372→                className="text-center"
+   373→              >
+   374→                <div className="text-2xl md:text-3xl font-bold text-emerald-400">
+   375→                  {s.value}
+   376→                </div>
+   377→                <div className="text-xs md:text-sm text-stone-400 mt-1">
+   378→                  {s.label}
+   379→                </div>
+   380→              </motion.div>
+   381→            ))}
+   382→          </div>
+   383→        </section>
+   384→
+   385→        {/* ===== SERVICES TABS ===== */}
+   386→        <section
+   387→          id="services"
+   388→          aria-labelledby="services-heading"
+   389→          className="bg-stone-50 py-20 md:py-28"
+   390→        >
+   391→          <div className="max-w-7xl mx-auto px-6">
+   392→            <motion.div
+   393→              initial="hidden"
+   394→              whileInView="visible"
+   395→              viewport={viewportOnce}
+   396→              variants={fadeUp}
+   397→              className="max-w-2xl"
+   398→            >
+   399→              <p className="text-xs font-semibold uppercase tracking-widest text-emerald-700 mb-3">
+   400→                What we do
+   401→              </p>
+   402→              <h2
+   403→                id="services-heading"
+   404→                className="text-3xl md:text-5xl font-bold text-stone-900 tracking-tight"
+   405→              >
+   406→                Three trades, hundreds of transformations.
+   407→              </h2>
+   408→            </motion.div>
+   409→
+   410→            <Tabs defaultValue="carpentry" className="mt-10">
+   411→              <TabsList className="bg-white border border-stone-200 h-auto p-1.5 rounded-xl flex w-full md:w-fit gap-1">
+   412→                {BUSINESS.services.map((s) => {
+   413→                  const Icon = ICONS[s.icon as keyof typeof ICONS] ?? Hammer;
+   414→                  return (
+   415→                    <TabsTrigger
+   416→                      key={s.id}
+   417→                      value={s.id}
+   418→                      className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white rounded-lg px-4 py-2 text-sm font-medium flex-1 md:flex-initial"
+   419→                    >
+   420→                      <Icon className="size-4" />
+   421→                      {s.label}
+   422→                    </TabsTrigger>
+   423→                  );
+   424→                })}
+   425→              </TabsList>
+   426→
+   427→              {BUSINESS.services.map((s) => {
+   428→                const Icon = ICONS[s.icon as keyof typeof ICONS] ?? Hammer;
+   429→                return (
+   430→                  <TabsContent key={s.id} value={s.id} className="mt-8">
+   431→                    <motion.div
+   432→                      initial="hidden"
+   433→                      animate="visible"
+   434→                      variants={fadeIn}
+   435→                      className="grid md:grid-cols-2 gap-6 md:gap-10 items-center"
+   436→                    >
+   437→                      <div className="relative rounded-xl overflow-hidden border border-stone-200 shadow-sm">
+   438→                        <img
+   439→                          src={s.image}
+   440→                          alt={`${s.label} work sample from R&R Handyman`}
+   441→                          className="w-full h-full object-cover aspect-[4/3]"
+   442→                          loading="lazy"
+   443→                        />
+   444→                        <Badge className="absolute top-3 left-3 bg-emerald-600 text-white border-transparent gap-1 px-2.5 py-1">
+   445→                          <Icon className="size-3" />
+   446→                          {s.label}
+   447→                        </Badge>
+   448→                      </div>
+   449→                      <div>
+   450→                        <h3 className="text-2xl md:text-3xl font-bold text-stone-900 mb-3">
+   451→                          {s.label}
+   452→                        </h3>
+   453→                        <p className="text-stone-600 leading-relaxed mb-5">
+   454→                          {s.longBlurb}
+   455→                        </p>
+   456→                        <ul className="grid sm:grid-cols-2 gap-x-6 gap-y-2 mb-6">
+   457→                          {s.bullets.map((b) => (
+   458→                            <li
+   459→                              key={b}
+   460→                              className="flex items-start gap-2 text-sm text-stone-700"
+   461→                            >
+   462→                              <CheckCircle2 className="size-4 text-emerald-600 mt-0.5 shrink-0" />
+   463→                              <span>{b}</span>
+   464→                            </li>
+   465→                          ))}
+   466→                        </ul>
+   467→                        <div className="flex flex-wrap items-center gap-4">
+   468→                          <Button
+   469→                            type="button"
+   470→                            onClick={() => handleServiceGalleryClick(s.id)}
+   471→                            className="bg-emerald-600 hover:bg-emerald-700 text-white"
+   472→                          >
+   473→                            See {s.label} gallery
+   474→                            <ArrowRight className="size-4" />
+   475→                          </Button>
+   476→                          <span className="text-sm text-stone-500">
+   477→                            Starting at{' '}
+   478→                            <span className="font-semibold text-stone-900">
+   479→                              {s.startingAt}
+   480→                            </span>
+   481→                          </span>
+   482→                        </div>
+   483→                      </div>
+   484→                    </motion.div>
+   485→                  </TabsContent>
+   486→                );
+   487→              })}
+   488→            </Tabs>
+   489→          </div>
+   490→        </section>
+   491→
+   492→        {/* ===== GALLERY ===== */}
+   493→        <section
+   494→          id="gallery"
+   495→          aria-labelledby="gallery-heading"
+   496→          className="bg-white py-20 md:py-28"
+   497→        >
+   498→          <div className="max-w-7xl mx-auto px-6">
+   499→            <motion.div
+   500→              initial="hidden"
+   501→              whileInView="visible"
+   502→              viewport={viewportOnce}
+   503→              variants={fadeUp}
+   504→              className="max-w-2xl mb-8"
+   505→            >
+   506→              <p className="text-xs font-semibold uppercase tracking-widest text-emerald-700 mb-3">
+   507→                Recent work
+   508→              </p>
+   509→              <h2
+   510→                id="gallery-heading"
+   511→                className="text-3xl md:text-5xl font-bold text-stone-900 tracking-tight"
+   512→              >
+   513→                A look at recent projects in {BUSINESS.primaryCity}.
+   514→              </h2>
+   515→              <p className="text-stone-600 mt-4">
+   516→                Filter by trade to see how each kind of job turns out.
+   517→              </p>
+   518→            </motion.div>
+   519→
+   520→            <div
+   521→              className="flex flex-wrap gap-2 mb-10 overflow-x-auto pb-1"
+   522→              role="tablist"
+   523→              aria-label="Filter gallery by trade"
+   524→            >
+   525→              {FILTERS.map((f) => {
+   526→                const active = galleryFilter === f.value;
+   527→                return (
+   528→                  <Button
+   529→                    key={f.value}
+   530→                    type="button"
+   531→                    size="sm"
+   532→                    variant={active ? 'default' : 'outline'}
+   533→                    onClick={() => setGalleryFilter(f.value)}
+   534→                    aria-pressed={active}
+   535→                    className={
+   536→                      active
+   537→                        ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+   538→                        : 'border-stone-200 text-stone-700 hover:border-stone-300'
+   539→                    }
+   540→                  >
+   541→                    {f.label}
+   542→                  </Button>
+   543→                );
+   544→              })}
+   545→            </div>
+   546→
+   547→            {galleryPhotos.length === 0 ? (
+   548→              <p className="text-center text-stone-500 py-12">
+   549→                No photos in this category yet.
+   550→              </p>
+   551→            ) : (
+   552→              <div className="columns-1 sm:columns-2 lg:columns-3 gap-4 [&>*]:mb-4">
+   553→                {galleryPhotos.map((src) => {
+   554→                  const cap = captionFor(src);
+   555→                  const filterLabel = FILTER_BADGE_LABEL[galleryFilter];
+   556→                  return (
+   557→                    <motion.button
+   558→                      key={src}
+   559→                      type="button"
+   560→                      initial="hidden"
+   561→                      whileInView="visible"
+   562→                      viewport={{ once: true, margin: '-40px' }}
+   563→                      variants={fadeIn}
+   564→                      onClick={() => setLightbox(src)}
+   565→                      aria-label={`Open "${cap.title}" in lightbox`}
+   566→                      className="group relative block w-full text-left rounded-xl overflow-hidden border border-stone-200 bg-stone-100 break-inside-avoid focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 outline-none"
+   567→                    >
+   568→                      <img
+   569→                        src={src}
+   570→                        alt={cap.title}
+   571→                        loading="lazy"
+   572→                        className="w-full h-auto block transition-transform duration-500 group-hover:scale-[1.04]"
+   573→                      />
+   574→                      <div className="absolute inset-0 bg-gradient-to-t from-stone-900/85 via-stone-900/20 to-transparent" />
+   575→                      <div className="absolute bottom-0 left-0 right-0 p-4">
+   576→                        <Badge className="bg-emerald-600 text-white border-transparent mb-2 text-[10px] uppercase tracking-wide">
+   577→                          {filterLabel}
+   578→                        </Badge>
+   579→                        <h3 className="text-white font-semibold text-base leading-snug">
+   580→                          {cap.title}
+   581→                        </h3>
+   582→                      </div>
+   583→                    </motion.button>
+   584→                  );
+   585→                })}
+   586→              </div>
+   587→            )}
+   588→          </div>
+   589→        </section>
+   590→
+   591→        {/* ===== LIGHTBOX DIALOG ===== */}
+   592→        <Dialog
+   593→          open={!!lightbox}
+   594→          onOpenChange={(open) => {
+   595→            if (!open) setLightbox(null);
+   596→          }}
+   597→        >
+   598→          <DialogContent className="max-w-3xl bg-white p-0 overflow-hidden gap-0">
+   599→            {lightbox && (
+   600→              <>
+   601→                <img
+   602→                  src={lightbox}
+   603→                  alt={captionFor(lightbox).title}
+   604→                  className="w-full h-auto max-h-[68vh] object-contain bg-stone-100"
+   605→                />
+   606→                <DialogHeader className="p-6 pt-4 text-left">
+   607→                  <DialogTitle className="text-xl text-stone-900">
+   608→                    {captionFor(lightbox).title}
+   609→                  </DialogTitle>
+   610→                  {captionFor(lightbox).blurb && (
+   611→                    <DialogDescription className="text-stone-600">
+   612→                      {captionFor(lightbox).blurb}
+   613→                    </DialogDescription>
+   614→                  )}
+   615→                </DialogHeader>
+   616→              </>
+   617→            )}
+   618→          </DialogContent>
+   619→        </Dialog>
+   620→
+   621→        {/* ===== CASE STUDY HIGHLIGHT ===== */}
+   622→        <section
+   623→          aria-labelledby="spotlight-heading"
+   624→          className="bg-stone-900 text-stone-50 py-20 md:py-28"
+   625→        >
+   626→          <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-10 items-center">
+   627→            <motion.div
+   628→              initial="hidden"
+   629→              whileInView="visible"
+   630→              viewport={viewportOnce}
+   631→              variants={fadeUp}
+   632→              className="relative rounded-2xl overflow-hidden border border-stone-800 shadow-xl"
+   633→            >
+   634→              <img
+   635→                src="/handyman-photos/img_026.jpg"
+   636→                alt="Deck board refinish before and after — weathered gray planks meet freshly replaced yellow pine"
+   637→                className="w-full h-auto object-cover aspect-[4/3]"
+   638→                loading="lazy"
+   639→              />
+   640→              <Badge className="absolute top-4 left-4 bg-emerald-600 text-white border-transparent gap-1.5 px-3 py-1.5">
+   641→                <Camera className="size-3.5" />
+   642→                Before / After
+   643→              </Badge>
+   644→            </motion.div>
+   645→
+   646→            <motion.div
+   647→              initial="hidden"
+   648→              whileInView="visible"
+   649→              viewport={viewportOnce}
+   650→              variants={fadeUp}
+   651→            >
+   652→              <p className="text-xs font-semibold uppercase tracking-widest text-emerald-400 mb-3">
+   653→                Project Spotlight
+   654→              </p>
+   655→              <h3
+   656→                id="spotlight-heading"
+   657→                className="text-2xl md:text-4xl font-bold mb-4 tracking-tight"
+   658→              >
+   659→                Project Spotlight: Deck Refinish
+   660→              </h3>
+   661→              <p className="text-stone-300 leading-relaxed mb-6">
+   662→                We lifted years of weathered gray deck boards and replaced them
+   663→                with new yellow pine, feathered into the existing framing, sanded
+   664→                smooth, and sealed against the next ten winters. The contrast —
+   665→                clean bright wood next to sun-bleached gray — is the kind of
+   666→                before/after that makes neighbors ask for the contractor&apos;s
+   667→                number.
+   668→              </p>
+   669→              <blockquote className="border-l-2 border-emerald-500 pl-4 mb-6">
+   670→                <Quote className="size-5 text-emerald-500 mb-2" />
+   671→                <p className="text-stone-200 italic mb-2 leading-relaxed">
+   672→                  &ldquo;{TESTIMONIALS[0].quote}&rdquo;
+   673→                </p>
+   674→                <footer className="text-sm text-stone-400">
+   675→                  — {TESTIMONIALS[0].name}, {TESTIMONIALS[0].location} ·{' '}
+   676→                  {TESTIMONIALS[0].service}
+   677→                </footer>
+   678→              </blockquote>
+   679→              <Button
+   680→                type="button"
+   681→                onClick={() => scrollToId('contact')}
+   682→                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+   683→              >
+   684→                Request a deck quote
+   685→                <ArrowRight className="size-4" />
+   686→              </Button>
+   687→            </motion.div>
+   688→          </div>
+   689→        </section>
+   690→
+   691→        {/* ===== TESTIMONIALS ===== */}
+   692→        <section
+   693→          id="reviews"
+   694→          aria-labelledby="reviews-heading"
+   695→          className="bg-white py-20 md:py-28"
+   696→        >
+   697→          <div className="max-w-7xl mx-auto px-6">
+   698→            <motion.div
+   699→              initial="hidden"
+   700→              whileInView="visible"
+   701→              viewport={viewportOnce}
+   702→              variants={fadeUp}
+   703→              className="max-w-2xl mb-12"
+   704→            >
+   705→              <p className="text-xs font-semibold uppercase tracking-widest text-emerald-700 mb-3">
+   706→                Reviews
+   707→              </p>
+   708→              <h2
+   709→                id="reviews-heading"
+   710→                className="text-3xl md:text-5xl font-bold text-stone-900 tracking-tight"
+   711→              >
+   712→                What customers say.
+   713→              </h2>
+   714→            </motion.div>
+   715→
+   716→            <div className="grid md:grid-cols-3 gap-6">
+   717→              {TESTIMONIALS.slice(1, 4).map((t) => (
+   718→                <motion.article
+   719→                  key={t.name}
+   720→                  initial="hidden"
+   721→                  whileInView="visible"
+   722→                  viewport={{ once: true, margin: '-60px' }}
+   723→                  variants={fadeUp}
+   724→                >
+   725→                  <Card className="h-full p-6 gap-4 border-stone-200 bg-white shadow-sm hover:shadow-md transition-shadow">
+   726→                    <CardContent className="px-0 space-y-4">
+   727→                      <Quote className="size-8 text-emerald-600" />
+   728→                      <div
+   729→                        className="flex gap-0.5"
+   730→                        aria-label={`${t.rating} out of 5 stars`}
+   731→                      >
+   732→                        {Array.from({ length: t.rating }).map((_, i) => (
+   733→                          <Star
+   734→                            key={i}
+   735→                            className="size-4 text-amber-500 fill-amber-500"
+   736→                          />
+   737→                        ))}
+   738→                      </div>
+   739→                      <p className="text-stone-700 leading-relaxed text-sm">
+   740→                        {t.quote}
+   741→                      </p>
+   742→                      <div className="pt-3 border-t border-stone-100">
+   743→                        <p className="font-semibold text-stone-900 text-sm">
+   744→                          {t.name}
+   745→                        </p>
+   746→                        <p className="text-xs text-stone-500">
+   747→                          {t.location} · {t.service}
+   748→                        </p>
+   749→                      </div>
+   750→                    </CardContent>
+   751→                  </Card>
+   752→                </motion.article>
+   753→              ))}
+   754→            </div>
+   755→          </div>
+   756→        </section>
+   757→
+   758→        {/* ===== PROCESS ===== */}
+   759→        <section
+   760→          aria-labelledby="process-heading"
+   761→          className="bg-stone-50 py-20 md:py-28"
+   762→        >
+   763→          <div className="max-w-7xl mx-auto px-6">
+   764→            <motion.div
+   765→              initial="hidden"
+   766→              whileInView="visible"
+   767→              viewport={viewportOnce}
+   768→              variants={fadeUp}
+   769→              className="max-w-2xl mb-12"
+   770→            >
+   771→              <p className="text-xs font-semibold uppercase tracking-widest text-emerald-700 mb-3">
+   772→                How it works
+   773→              </p>
+   774→              <h2
+   775→                id="process-heading"
+   776→                className="text-3xl md:text-5xl font-bold text-stone-900 tracking-tight"
+   777→              >
+   778→                Three steps. No surprises.
+   779→              </h2>
+   780→            </motion.div>
+   781→
+   782→            <div className="grid md:grid-cols-3 gap-6">
+   783→              {[
+   784→                {
+   785→                  n: '1',
+   786→                  title: 'Free Quote',
+   787→                  desc: 'Tell us what you need — by phone, form, or text. We visit the site (or review photos) and send a flat, no-obligation quote within 24 hours.',
+   788→                },
+   789→                {
+   790→                  n: '2',
+   791→                  title: 'Schedule',
+   792→                  desc: 'Accept the quote and pick a day that works. Most plumbing and power-washing jobs book within the week. Larger carpentry builds get a clear start and finish date.',
+   793→                },
+   794→                {
+   795→                  n: '3',
+   796→                  title: 'Done Right',
+   797→                  desc: 'Rick shows up on time, does the work to code, cleans up the site, and walks you through the result. You only pay when the punch list is empty.',
+   798→                },
+   799→              ].map((step, i) => (
+   800→                <motion.div
+   801→                  key={step.n}
+   802→                  initial="hidden"
+   803→                  whileInView="visible"
+   804→                  viewport={{ once: true, margin: '-60px' }}
+   805→                  variants={fadeUp}
+   806→                  transition={{ delay: i * 0.1, duration: 0.5 }}
+   807→                  className="relative p-6 rounded-xl border border-stone-200 bg-white shadow-sm"
+   808→                >
+   809→                  <span
+   810→                    aria-hidden="true"
+   811→                    className="grid place-items-center h-10 w-10 rounded-full bg-emerald-600 text-white font-bold mb-4"
+   812→                  >
+   813→                    {step.n}
+   814→                  </span>
+   815→                  <h3 className="font-semibold text-stone-900 text-lg mb-2">
+   816→                    {step.title}
+   817→                  </h3>
+   818→                  <p className="text-stone-600 text-sm leading-relaxed">
+   819→                    {step.desc}
+   820→                  </p>
+   821→                </motion.div>
+   822→              ))}
+   823→            </div>
+   824→          </div>
+   825→        </section>
+   826→
+   827→        {/* ===== LEAD FORM ===== */}
+   828→        <section
+   829→          id="contact"
+   830→          aria-labelledby="contact-heading"
+   831→          className="bg-stone-900 text-stone-50 py-20 md:py-28"
+   832→        >
+   833→          <div className="max-w-2xl mx-auto px-6">
+   834→            <motion.div
+   835→              initial="hidden"
+   836→              whileInView="visible"
+   837→              viewport={viewportOnce}
+   838→              variants={fadeUp}
+   839→              className="text-center mb-10"
+   840→            >
+   841→              <p className="text-xs font-semibold uppercase tracking-widest text-emerald-400 mb-3">
+   842→                Get a quote
+   843→              </p>
+   844→              <h2
+   845→                id="contact-heading"
+   846→                className="text-3xl md:text-5xl font-bold tracking-tight"
+   847→              >
+   848→                Get a free quote in 24 hours.
+   849→              </h2>
+   850→              <p className="text-stone-400 mt-4">
+   851→                Tell us about your project. Rick personally reviews every request
+   852→                and reaches out within one business day.
+   853→              </p>
+   854→            </motion.div>
+   855→
+   856→            <Card className="bg-stone-800/50 border-stone-700 text-stone-50 p-0 gap-0">
+   857→              <CardContent className="p-6 md:p-8 space-y-5">
+   858→                <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+   859→                  <div className="grid sm:grid-cols-2 gap-4">
+   860→                    <div className="space-y-1.5">
+   861→                      <Label htmlFor="name" className="text-stone-200">
+   862→                        Name
+   863→                      </Label>
+   864→                      <Input
+   865→                        id="name"
+   866→                        name="name"
+   867→                        required
+   868→                        autoComplete="name"
+   869→                        className="bg-stone-900/60 border-stone-700 text-white placeholder:text-stone-500 focus-visible:border-emerald-500 focus-visible:ring-emerald-500/30"
+   870→                        placeholder="Jane Doe"
+   871→                      />
+   872→                    </div>
+   873→                    <div className="space-y-1.5">
+   874→                      <Label htmlFor="phone" className="text-stone-200">
+   875→                        Phone
+   876→                      </Label>
+   877→                      <Input
+   878→                        id="phone"
+   879→                        name="phone"
+   880→                        type="tel"
+   881→                        required
+   882→                        autoComplete="tel"
+   883→                        className="bg-stone-900/60 border-stone-700 text-white placeholder:text-stone-500 focus-visible:border-emerald-500 focus-visible:ring-emerald-500/30"
+   884→                        placeholder="(555) 123-4567"
+   885→                      />
+   886→                    </div>
+   887→                  </div>
+   888→
+   889→                  <div className="space-y-1.5">
+   890→                    <Label htmlFor="email" className="text-stone-200">
+   891→                      Email
+   892→                    </Label>
+   893→                    <Input
+   894→                      id="email"
+   895→                      name="email"
+   896→                      type="email"
+   897→                      autoComplete="email"
+   898→                      className="bg-stone-900/60 border-stone-700 text-white placeholder:text-stone-500 focus-visible:border-emerald-500 focus-visible:ring-emerald-500/30"
+   899→                      placeholder="you@email.com"
+   900→                    />
+   901→                  </div>
+   902→
+   903→                  <div className="grid sm:grid-cols-2 gap-4">
+   904→                    <div className="space-y-1.5">
+   905→                      <Label htmlFor="service" className="text-stone-200">
+   906→                        Service needed
+   907→                      </Label>
+   908→                      <Select
+   909→                        value={serviceNeeded}
+   910→                        onValueChange={setServiceNeeded}
+   911→                      >
+   912→                        <SelectTrigger
+   913→                          id="service"
+   914→                          className="bg-stone-900/60 border-stone-700 text-white w-full focus-visible:border-emerald-500 focus-visible:ring-emerald-500/30 data-[placeholder]:text-stone-500"
+   915→                        >
+   916→                          <SelectValue placeholder="Pick a trade" />
+   917→                        </SelectTrigger>
+   918→                        <SelectContent>
+   919→                          {BUSINESS.services.map((s) => (
+   920→                            <SelectItem key={s.id} value={s.id}>
+   921→                              {s.label}
+   922→                            </SelectItem>
+   923→                          ))}
+   924→                          <SelectItem value="other">Something else</SelectItem>
+   925→                        </SelectContent>
+   926→                      </Select>
+   927→                    </div>
+   928→                    <div className="space-y-1.5">
+   929→                      <Label
+   930→                        htmlFor="date"
+   931→                        className="text-stone-200 flex items-center gap-1.5"
+   932→                      >
+   933→                        <Calendar className="size-3.5" />
+   934→                        Preferred date
+   935→                      </Label>
+   936→                      <Input
+   937→                        id="date"
+   938→                        name="date"
+   939→                        type="date"
+   940→                        className="bg-stone-900/60 border-stone-700 text-white placeholder:text-stone-500 focus-visible:border-emerald-500 focus-visible:ring-emerald-500/30 [color-scheme:dark]"
+   941→                      />
+   942→                    </div>
+   943→                  </div>
+   944→
+   945→                  <div className="space-y-1.5">
+   946→                    <Label htmlFor="message" className="text-stone-200">
+   947→                      Message
+   948→                    </Label>
+   949→                    <Textarea
+   950→                      id="message"
+   951→                      name="message"
+   952→                      rows={4}
+   953→                      className="bg-stone-900/60 border-stone-700 text-white placeholder:text-stone-500 focus-visible:border-emerald-500 focus-visible:ring-emerald-500/30 min-h-24"
+   954→                      placeholder="Tell us a bit about the job — what's broken, what you want built, or what you want washed."
+   955→                    />
+   956→                  </div>
+   957→
+   958→                  <Button
+   959→                    type="submit"
+   960→                    size="lg"
+   961→                    disabled={submitting}
+   962→                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-60 disabled:cursor-not-allowed"
+   963→                  >
+   964→                    {submitting ? (
+   965→                      <>
+   966→                        <Loader2 className="size-4 animate-spin" />
+   967→                        Sending…
+   968→                      </>
+   969→                    ) : (
+   970→                      <>
+   971→                        <Send className="size-4" />
+   972→                        Send request
+   973→                      </>
+   974→                    )}
+   975→                  </Button>
+   976→                </form>
+   977→
+   978→                <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 pt-4 border-t border-stone-700 text-xs text-stone-400">
+   979→                  <span className="flex items-center gap-1.5">
+   980→                    <ShieldCheck className="size-4 text-emerald-400" /> Licensed
+   981→                    &amp; insured
+   982→                  </span>
+   983→                  <span className="flex items-center gap-1.5">
+   984→                    <Wrench className="size-4 text-emerald-400" />{' '}
+   985→                    {BUSINESS.yearsInBusiness}+ years
+   986→                  </span>
+   987→                  <span className="flex items-center gap-1.5">
+   988→                    <Star className="size-4 text-emerald-400" />{' '}
+   989→                    {BUSINESS.avgRating}★
+   990→                  </span>
+   991→                </div>
+   992→              </CardContent>
+   993→            </Card>
+   994→          </div>
+   995→        </section>
+   996→
+   997→        {/* ===== FAQ ===== */}
+   998→        <section
+   999→          id="faq"
+  1000→          aria-labelledby="faq-heading"
+  1001→          className="bg-white py-20 md:py-28"
+  1002→        >
+  1003→          <div className="max-w-3xl mx-auto px-6">
+  1004→            <motion.div
+  1005→              initial="hidden"
+  1006→              whileInView="visible"
+  1007→              viewport={viewportOnce}
+  1008→              variants={fadeUp}
+  1009→              className="text-center mb-10"
+  1010→            >
+  1011→              <p className="text-xs font-semibold uppercase tracking-widest text-emerald-700 mb-3">
+  1012→                FAQ
+  1013→              </p>
+  1014→              <h2
+  1015→                id="faq-heading"
+  1016→                className="text-3xl md:text-5xl font-bold text-stone-900 tracking-tight"
+  1017→              >
+  1018→                Questions, answered.
+  1019→              </h2>
+  1020→            </motion.div>
+  1021→
+  1022→            <Accordion type="single" collapsible className="w-full">
+  1023→              {FAQS.map((f, i) => (
+  1024→                <AccordionItem
+  1025→                  key={i}
+  1026→                  value={`item-${i}`}
+  1027→                  className="border-stone-200"
+  1028→                >
+  1029→                  <AccordionTrigger className="text-left text-base font-medium text-stone-900 hover:no-underline hover:text-emerald-700">
+  1030→                    {f.q}
+  1031→                  </AccordionTrigger>
+  1032→                  <AccordionContent className="text-stone-600 leading-relaxed text-sm">
+  1033→                    {f.a}
+  1034→                  </AccordionContent>
+  1035→                </AccordionItem>
+  1036→              ))}
+  1037→            </Accordion>
+  1038→          </div>
+  1039→        </section>
+  1040→      </main>
+  1041→
+  1042→      {/* ===== FOOTER ===== */}
+  1043→      <footer className="bg-stone-900 text-stone-400 mt-auto">
+  1044→        <div className="max-w-7xl mx-auto px-6 py-12 grid gap-8 md:grid-cols-4">
+  1045→          <div className="md:col-span-1">
+  1046→            <div className="flex items-center gap-3 mb-3">
+  1047→              <span
+  1048→                aria-hidden="true"
+  1049→                className="grid place-items-center h-10 w-10 rounded-md bg-emerald-600 text-white font-bold text-xs"
+  1050→              >
+  1051→                R&amp;R
+  1052→              </span>
+  1053→              <span className="font-semibold text-stone-50">
+  1054→                {BUSINESS.brand}
+  1055→              </span>
+  1056→            </div>
+  1057→            <p className="text-sm leading-relaxed">
+  1058→              Owned and operated by {BUSINESS.owner}. {BUSINESS.serviceArea}.
+  1059→            </p>
+  1060→          </div>
+  1061→
+  1062→          <div>
+  1063→            <h3 className="text-stone-50 font-semibold text-sm mb-3">Services</h3>
+  1064→            <ul className="space-y-2 text-sm">
+  1065→              {BUSINESS.services.map((s) => (
+  1066→                <li key={s.id}>
+  1067→                  <button
+  1068→                    type="button"
+  1069→                    onClick={() => {
+  1070→                      setGalleryFilter(serviceIdToFilter(s.id));
+  1071→                      scrollToId('services');
+  1072→                    }}
+  1073→                    className="hover:text-emerald-400 transition-colors"
+  1074→                  >
+  1075→                    {s.label}
+  1076→                  </button>
+  1077→                </li>
+  1078→              ))}
+  1079→            </ul>
+  1080→          </div>
+  1081→
+  1082→          <div>
+  1083→            <h3 className="text-stone-50 font-semibold text-sm mb-3">
+  1084→              Company
+  1085→            </h3>
+  1086→            <ul className="space-y-2 text-sm">
+  1087→              <li>
+  1088→                <button
+  1089→                  type="button"
+  1090→                  onClick={() => scrollToId('gallery')}
+  1091→                  className="hover:text-emerald-400 transition-colors"
+  1092→                >
+  1093→                  Recent Work
+  1094→                </button>
+  1095→              </li>
+  1096→              <li>
+  1097→                <button
+  1098→                  type="button"
+  1099→                  onClick={() => scrollToId('reviews')}
+  1100→                  className="hover:text-emerald-400 transition-colors"
+  1101→                >
+  1102→                  Reviews
+  1103→                </button>
+  1104→              </li>
+  1105→              <li>
+  1106→                <button
+  1107→                  type="button"
+  1108→                  onClick={() => scrollToId('faq')}
+  1109→                  className="hover:text-emerald-400 transition-colors"
+  1110→                >
+  1111→                  FAQ
+  1112→                </button>
+  1113→              </li>
+  1114→              <li>
+  1115→                <button
+  1116→                  type="button"
+  1117→                  onClick={() => scrollToId('contact')}
+  1118→                  className="hover:text-emerald-400 transition-colors"
+  1119→                >
+  1120→                  Get a Quote
+  1121→                </button>
+  1122→              </li>
+  1123→            </ul>
+  1124→          </div>
+  1125→
+  1126→          <div>
+  1127→            <h3 className="text-stone-50 font-semibold text-sm mb-3">Contact</h3>
+  1128→            <ul className="space-y-2 text-sm">
+  1129→              <li>
+  1130→                <a
+  1131→                  href={BUSINESS.phoneHref}
+  1132→                  className="flex items-center gap-2 hover:text-emerald-400 transition-colors"
+  1133→                >
+  1134→                  <Phone className="size-4" /> {BUSINESS.phone}
+  1135→                </a>
+  1136→              </li>
+  1137→              <li>
+  1138→                <a
+  1139→                  href={BUSINESS.emailHref}
+  1140→                  className="flex items-center gap-2 hover:text-emerald-400 transition-colors"
+  1141→                >
+  1142→                  <Mail className="size-4" /> {BUSINESS.email}
+  1143→                </a>
+  1144→              </li>
+  1145→              <li className="flex items-center gap-2">
+  1146→                <Clock className="size-4" /> {BUSINESS.hours.weekdays}
+  1147→              </li>
+  1148→              <li className="flex items-center gap-2">
+  1149→                <MapPin className="size-4" /> {BUSINESS.primaryCity} &amp; nearby
+  1150→                towns
+  1151→              </li>
+  1152→            </ul>
+  1153→          </div>
+  1154→        </div>
+  1155→
+  1156→        <div className="border-t border-stone-800">
+  1157→          <div className="max-w-7xl mx-auto px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-stone-500">
+  1158→            <p>
+  1159→              © {CURRENT_YEAR} {BUSINESS.brand}. All rights reserved.
+  1160→            </p>
+  1161→            <p>Website mockup — sample design.</p>
+  1162→          </div>
+  1163→        </div>
+  1164→      </footer>
+  1165→    </div>
+  1166→  );
+  1167→}
+  1168→

@@ -1,0 +1,1274 @@
+     1→'use client';
+     2→
+     3→import { useState, type ReactNode } from 'react';
+     4→import { motion, type Variants } from 'framer-motion';
+     5→import {
+     6→  Droplets,
+     7→  Hammer,
+     8→  SprayCan,
+     9→  Phone,
+    10→  Star,
+    11→  ArrowRight,
+    12→  CheckCircle2,
+    13→  MapPin,
+    14→  Clock,
+    15→  Mail,
+    16→  ShieldCheck,
+    17→  Wrench,
+    18→  Menu,
+    19→  Calendar,
+    20→  Send,
+    21→  Smile,
+    22→  Loader2,
+    23→  type LucideIcon,
+    24→} from 'lucide-react';
+    25→
+    26→import { Button } from '@/components/ui/button';
+    27→import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+    28→import { Badge } from '@/components/ui/badge';
+    29→import { Input } from '@/components/ui/input';
+    30→import { Label } from '@/components/ui/label';
+    31→import { useLeadForm } from '@/hooks/use-lead-form';
+    32→import { Textarea } from '@/components/ui/textarea';
+    33→import {
+    34→  Select,
+    35→  SelectContent,
+    36→  SelectItem,
+    37→  SelectTrigger,
+    38→  SelectValue,
+    39→} from '@/components/ui/select';
+    40→import {
+    41→  Accordion,
+    42→  AccordionContent,
+    43→  AccordionItem,
+    44→  AccordionTrigger,
+    45→} from '@/components/ui/accordion';
+    46→import {
+    47→  Dialog,
+    48→  DialogContent,
+    49→  DialogDescription,
+    50→  DialogHeader,
+    51→  DialogTitle,
+    52→} from '@/components/ui/dialog';
+    53→import {
+    54→  Sheet,
+    55→  SheetContent,
+    56→  SheetHeader,
+    57→  SheetTitle,
+    58→  SheetTrigger,
+    59→  SheetClose,
+    60→} from '@/components/ui/sheet';
+    61→
+    62→import {
+    63→  GALLERY_BY_CATEGORY,
+    64→  HERO_PICKS,
+    65→  captionFor,
+    66→  type Photo,
+    67→} from '@/lib/handyman-photos';
+    68→import { BUSINESS, TESTIMONIALS, FAQS } from '@/lib/business-info';
+    69→
+    70→export const DESIGN_ID = 'trusted';
+    71→export const DESIGN_NAME = 'Trusted Local Craftsman';
+    72→
+    73→const NAV_LINKS: { href: string; label: string }[] = [
+    74→  { href: '#meet', label: 'Meet Rick' },
+    75→  { href: '#services', label: 'Services' },
+    76→  { href: '#work', label: 'Work' },
+    77→  { href: '#reviews', label: 'Reviews' },
+    78→  { href: '#contact', label: 'Contact' },
+    79→];
+    80→
+    81→const ICON_MAP: Record<string, LucideIcon> = {
+    82→  Droplets,
+    83→  Hammer,
+    84→  SprayCan,
+    85→};
+    86→
+    87→const fadeUp: Variants = {
+    88→  hidden: { opacity: 0, y: 24 },
+    89→  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } },
+    90→};
+    91→
+    92→const stagger: Variants = {
+    93→  hidden: { opacity: 0 },
+    94→  show: { opacity: 1, transition: { staggerChildren: 0.08 } },
+    95→};
+    96→
+    97→function Reveal({
+    98→  children,
+    99→  className,
+   100→  delay = 0,
+   101→}: {
+   102→  children: ReactNode;
+   103→  className?: string;
+   104→  delay?: number;
+   105→}) {
+   106→  return (
+   107→    <motion.div
+   108→      className={className}
+   109→      variants={fadeUp}
+   110→      initial="hidden"
+   111→      whileInView="show"
+   112→      viewport={{ once: true, margin: '-80px' }}
+   113→      transition={{ delay }}
+   114→    >
+   115→      {children}
+   116→    </motion.div>
+   117→  );
+   118→}
+   119→
+   120→function StarsRow({ className }: { className?: string }) {
+   121→  return (
+   122→    <div className={`flex items-center gap-0.5 ${className ?? ''}`} aria-label="5 out of 5 stars">
+   123→      {Array.from({ length: 5 }).map((_, i) => (
+   124→        <Star key={i} className="size-4 fill-amber-500 text-amber-500" />
+   125→      ))}
+   126→    </div>
+   127→  );
+   128→}
+   129→
+   130→/* -------------------------------------------------------------------------- */
+   131→/*                                 Top nav                                    */
+   132→/* -------------------------------------------------------------------------- */
+   133→
+   134→function TopNav() {
+   135→  const [open, setOpen] = useState(false);
+   136→
+   137→  return (
+   138→    <header className="sticky top-0 z-50 border-b border-stone-300 bg-stone-100/95 backdrop-blur supports-[backdrop-filter]:bg-stone-100/80">
+   139→      <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 md:h-20" aria-label="Primary">
+   140→        {/* Brand */}
+   141→        <a href="#main" className="group flex items-center gap-3">
+   142→          <span className="flex size-10 items-center justify-center rounded-full bg-orange-600 text-stone-50 shadow-sm transition-transform group-hover:scale-105">
+   143→            <Hammer className="size-5" />
+   144→          </span>
+   145→          <span className="flex flex-col leading-tight">
+   146→            <span className="font-serif text-xl italic text-stone-900">Rick Rodriguez</span>
+   147→            <span className="text-xs font-medium uppercase tracking-wider text-stone-500">
+   148→              {BUSINESS.shortBrand}
+   149→            </span>
+   150→          </span>
+   151→        </a>
+   152→
+   153→        {/* Center nav (desktop) */}
+   154→        <ul className="hidden items-center gap-8 md:flex">
+   155→          {NAV_LINKS.map((link) => (
+   156→            <li key={link.href}>
+   157→              <a
+   158→                href={link.href}
+   159→                className="text-sm font-medium text-stone-700 transition-colors hover:text-orange-700"
+   160→              >
+   161→                {link.label}
+   162→              </a>
+   163→            </li>
+   164→          ))}
+   165→        </ul>
+   166→
+   167→        {/* Right CTA */}
+   168→        <div className="flex items-center gap-2">
+   169→          <Button asChild className="hidden bg-orange-600 text-stone-50 hover:bg-orange-700 sm:inline-flex">
+   170→            <a href={BUSINESS.phoneHref}>
+   171→              <Phone className="size-4" />
+   172→              Call Rick
+   173→            </a>
+   174→          </Button>
+   175→
+   176→          {/* Mobile hamburger */}
+   177→          <Sheet open={open} onOpenChange={setOpen}>
+   178→            <SheetTrigger asChild>
+   179→              <Button
+   180→                variant="outline"
+   181→                size="icon"
+   182→                className="border-stone-300 bg-white text-stone-900 md:hidden"
+   183→                aria-label="Open menu"
+   184→              >
+   185→                <Menu className="size-5" />
+   186→              </Button>
+   187→            </SheetTrigger>
+   188→            <SheetContent side="right" className="w-80 border-stone-300 bg-stone-50">
+   189→              <SheetHeader className="pb-2">
+   190→                <SheetTitle className="font-serif text-2xl italic text-stone-900">
+   191→                  Rick Rodriguez
+   192→                </SheetTitle>
+   193→                <p className="text-xs uppercase tracking-wider text-stone-500">
+   194→                  {BUSINESS.shortBrand}
+   195→                </p>
+   196→              </SheetHeader>
+   197→              <nav className="mt-4 flex flex-col">
+   198→                {NAV_LINKS.map((link) => (
+   199→                  <SheetClose asChild key={link.href}>
+   200→                    <a
+   201→                      href={link.href}
+   202→                      className="border-b border-stone-200 px-1 py-3 text-base font-medium text-stone-800 transition-colors hover:text-orange-700"
+   203→                    >
+   204→                      {link.label}
+   205→                    </a>
+   206→                  </SheetClose>
+   207→                ))}
+   208→              </nav>
+   209→              <div className="mt-6">
+   210→                <SheetClose asChild>
+   211→                  <Button asChild className="w-full bg-orange-600 text-stone-50 hover:bg-orange-700">
+   212→                    <a href={BUSINESS.phoneHref}>
+   213→                      <Phone className="size-4" />
+   214→                      Call {BUSINESS.phone}
+   215→                    </a>
+   216→                  </Button>
+   217→                </SheetClose>
+   218→              </div>
+   219→            </SheetContent>
+   220→          </Sheet>
+   221→        </div>
+   222→      </nav>
+   223→    </header>
+   224→  );
+   225→}
+   226→
+   227→/* -------------------------------------------------------------------------- */
+   228→/*                                  Hero                                      */
+   229→/* -------------------------------------------------------------------------- */
+   230→
+   231→function Hero() {
+   232→  return (
+   233→    <section className="relative overflow-hidden bg-stone-100">
+   234→      <div className="mx-auto grid max-w-7xl items-center gap-10 px-6 py-16 md:grid-cols-2 md:gap-12 md:py-20 lg:min-h-[88vh]">
+   235→        {/* Left: copy */}
+   236→        <motion.div
+   237→          variants={stagger}
+   238→          initial="hidden"
+   239→          animate="show"
+   240→          className="order-2 md:order-1"
+   241→        >
+   242→          <motion.div variants={fadeUp}>
+   243→            <Badge className="border-orange-200 bg-orange-100 text-orange-700 hover:bg-orange-100">
+   244→              <MapPin className="mr-1 size-3.5" />
+   245→              Springfield&apos;s neighborhood handyman
+   246→            </Badge>
+   247→          </motion.div>
+   248→
+   249→          <motion.h1
+   250→            variants={fadeUp}
+   251→            className="mt-5 text-4xl font-bold leading-[1.05] tracking-tight text-stone-900 sm:text-5xl md:text-6xl"
+   252→          >
+   253→            Hi, I&apos;m Rick — your <span className="text-orange-700">local handyman.</span>
+   254→          </motion.h1>
+   255→
+   256→          <motion.p variants={fadeUp} className="mt-6 max-w-xl text-lg leading-relaxed text-stone-700">
+   257→            Plumbing, carpentry, and power washing done right, by a guy who actually shows up.
+   258→            12+ years, 1,850+ jobs, and a 4.9★ rating because I treat your home like mine.
+   259→          </motion.p>
+   260→
+   261→          <motion.div variants={fadeUp} className="mt-8 flex flex-wrap items-center gap-3">
+   262→            <Button asChild size="lg" className="bg-orange-600 text-stone-50 hover:bg-orange-700">
+   263→              <a href="#contact">
+   264→                Tell Rick What You Need
+   265→                <ArrowRight className="size-4" />
+   266→              </a>
+   267→            </Button>
+   268→            <Button
+   269→              asChild
+   270→              size="lg"
+   271→              variant="outline"
+   272→              className="border-stone-400 bg-transparent text-stone-900 hover:bg-stone-200/60"
+   273→            >
+   274→              <a href="#work">See My Work</a>
+   275→            </Button>
+   276→          </motion.div>
+   277→
+   278→          <motion.div
+   279→            variants={fadeUp}
+   280→            className="mt-6 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-stone-600"
+   281→          >
+   282→            <span className="inline-flex items-center gap-1.5">
+   283→              <ShieldCheck className="size-4 text-orange-700" />
+   284→              Licensed &amp; insured
+   285→            </span>
+   286→            <span aria-hidden className="text-stone-400">·</span>
+   287→            <span className="inline-flex items-center gap-1.5">
+   288→              <Clock className="size-4 text-orange-700" />
+   289→              Same-day quotes
+   290→            </span>
+   291→            <span aria-hidden className="text-stone-400">·</span>
+   292→            <span className="inline-flex items-center gap-1.5">
+   293→              <MapPin className="size-4 text-orange-700" />
+   294→              Springfield County
+   295→            </span>
+   296→          </motion.div>
+   297→        </motion.div>
+   298→
+   299→        {/* Right: portrait + overlapping card */}
+   300→        <motion.div
+   301→          initial={{ opacity: 0, scale: 0.96 }}
+   302→          animate={{ opacity: 1, scale: 1 }}
+   303→          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
+   304→          className="relative order-1 md:order-2"
+   305→        >
+   306→          <div className="relative overflow-hidden rounded-2xl border border-stone-300 bg-stone-200 shadow-xl shadow-orange-900/10">
+   307→            <img
+   308→              src={HERO_PICKS.garage}
+   309→              alt={captionFor(HERO_PICKS.garage).title}
+   310→              className="h-[320px] w-full object-cover sm:h-[420px] md:h-[560px]"
+   311→              loading="eager"
+   312→            />
+   313→            <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-stone-900/5" />
+   314→          </div>
+   315→
+   316→          {/* Overlapping owner card */}
+   317→          <Card className="absolute -bottom-5 left-4 max-w-[15rem] border-stone-300 bg-stone-50/95 p-4 shadow-lg backdrop-blur md:-left-6 md:max-w-xs">
+   318→            <div className="flex items-center gap-3">
+   319→              <div className="size-12 overflow-hidden rounded-full ring-2 ring-orange-600 ring-offset-2 ring-offset-stone-50">
+   320→                <img
+   321→                  src="/handyman-photos/img_004.jpg"
+   322→                  alt="Rick Rodriguez and a crew member in front of a finished garage shelving install"
+   323→                  className="h-full w-full object-cover"
+   324→                  loading="lazy"
+   325→                />
+   326→              </div>
+   327→              <div className="leading-tight">
+   328→                <p className="font-serif text-lg italic text-stone-900">Rick Rodriguez</p>
+   329→                <p className="text-xs uppercase tracking-wider text-stone-500">
+   330→                  Owner · {BUSINESS.yearsInBusiness}+ yrs
+   331→                </p>
+   332→              </div>
+   333→            </div>
+   334→            <div className="mt-3 flex items-center gap-2 border-t border-stone-200 pt-3">
+   335→              <StarsRow />
+   336→              <span className="text-xs text-stone-600">
+   337→                {BUSINESS.avgRating} from {BUSINESS.reviewCount} reviews
+   338→              </span>
+   339→            </div>
+   340→          </Card>
+   341→        </motion.div>
+   342→      </div>
+   343→    </section>
+   344→  );
+   345→}
+   346→
+   347→/* -------------------------------------------------------------------------- */
+   348→/*                                Meet Rick                                   */
+   349→/* -------------------------------------------------------------------------- */
+   350→
+   351→function MeetRick() {
+   352→  const trustItems = [
+   353→    { icon: ShieldCheck, label: 'Licensed & insured' },
+   354→    { icon: Wrench, label: `${BUSINESS.yearsInBusiness}+ years` },
+   355→    { icon: Star, label: `${BUSINESS.avgRating}★ rating` },
+   356→  ];
+   357→
+   358→  return (
+   359→    <section id="meet" className="bg-white py-20 md:py-28">
+   360→      <div className="mx-auto grid max-w-7xl items-center gap-12 px-6 md:grid-cols-2 md:gap-16">
+   361→        <Reveal>
+   362→          <div className="relative overflow-hidden rounded-2xl border border-stone-300 shadow-lg">
+   363→            <img
+   364→              src="/handyman-photos/img_004.jpg"
+   365→              alt="Rick Rodriguez and a crew member standing in front of a garage with newly built wooden shelving"
+   366→              className="h-[340px] w-full object-cover sm:h-[460px]"
+   367→              loading="lazy"
+   368→            />
+   369→            <div className="absolute bottom-4 left-4">
+   370→              <Badge className="border-stone-300 bg-stone-900/90 text-stone-50 hover:bg-stone-900/90">
+   371→                <Hammer className="mr-1 size-3.5" />
+   372→                Custom garage shelving crew
+   373→              </Badge>
+   374→            </div>
+   375→          </div>
+   376→        </Reveal>
+   377→
+   378→        <Reveal delay={0.1}>
+   379→          <p className="text-sm font-semibold uppercase tracking-widest text-orange-700">
+   380→            A few words from Rick
+   381→          </p>
+   382→          <h2 className="mt-2 text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
+   383→            I started R&amp;R Handyman in 2012 because I was tired of seeing neighbors get burned.
+   384→          </h2>
+   385→          <div className="mt-6 space-y-4 text-base leading-relaxed text-stone-700">
+   386→            <p>
+   387→              I started R&amp;R Handyman in 2012 because I was tired of seeing neighbors get burned by
+   388→              no-show contractors and overpriced &ldquo;pros.&rdquo; I&apos;m a one-truck,
+   389→              two-tool-belt operation — when you call, I answer. When I show up, I do the work myself.
+   390→            </p>
+   391→            <p>
+   392→              Plumbing, carpentry, and power washing are the three things I do every week. That
+   393→              means I&apos;m fast, I&apos;m clean, and I know what your job should cost before I start.
+   394→            </p>
+   395→            <p>
+   396→              Every job is backed by my 12-month workmanship guarantee. If something I touched fails
+   397→              within a year, I come back and fix it free.
+   398→            </p>
+   399→          </div>
+   400→
+   401→          <ul className="mt-8 flex flex-wrap gap-3">
+   402→            {trustItems.map((item) => (
+   403→              <li
+   404→                key={item.label}
+   405→                className="inline-flex items-center gap-2 rounded-full border border-orange-200 bg-orange-50 px-4 py-2 text-sm font-medium text-stone-800"
+   406→              >
+   407→                <item.icon className="size-4 text-orange-700" />
+   408→                {item.label}
+   409→              </li>
+   410→            ))}
+   411→          </ul>
+   412→        </Reveal>
+   413→      </div>
+   414→    </section>
+   415→  );
+   416→}
+   417→
+   418→/* -------------------------------------------------------------------------- */
+   419→/*                                 Services                                  */
+   420→/* -------------------------------------------------------------------------- */
+   421→
+   422→function Services() {
+   423→  return (
+   424→    <section id="services" className="bg-stone-100 py-20 md:py-28">
+   425→      <div className="mx-auto max-w-7xl px-6">
+   426→        <Reveal className="mx-auto max-w-2xl text-center">
+   427→          <p className="text-sm font-semibold uppercase tracking-widest text-orange-700">
+   428→            What Rick does
+   429→          </p>
+   430→          <h2 className="mt-2 text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
+   431→            Three trades, one phone call.
+   432→          </h2>
+   433→          <p className="mt-3 text-lg text-stone-600">
+   434→            No sub-contractors, no runaround. You call Rick, Rick does the work.
+   435→          </p>
+   436→        </Reveal>
+   437→
+   438→        <motion.div
+   439→          variants={stagger}
+   440→          initial="hidden"
+   441→          whileInView="show"
+   442→          viewport={{ once: true, margin: '-60px' }}
+   443→          className="mt-12 grid gap-6 md:grid-cols-3"
+   444→        >
+   445→          {BUSINESS.services.map((service) => {
+   446→            const Icon = ICON_MAP[service.icon] ?? Hammer;
+   447→            return (
+   448→              <motion.div key={service.id} variants={fadeUp}>
+   449→                <Card className="group h-full overflow-hidden border-stone-300 bg-white p-0 shadow-sm transition-shadow hover:shadow-lg">
+   450→                  <div className="relative h-48 overflow-hidden">
+   451→                    <img
+   452→                      src={service.image}
+   453→                      alt={captionFor(service.image).title}
+   454→                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+   455→                      loading="lazy"
+   456→                    />
+   457→                    <div className="absolute inset-0 bg-gradient-to-t from-stone-900/60 via-stone-900/0 to-transparent" />
+   458→                    <Badge className="absolute left-3 top-3 border-orange-200 bg-stone-50/95 text-orange-700 hover:bg-stone-50/95">
+   459→                      {service.label}
+   460→                    </Badge>
+   461→                    <div className="absolute bottom-3 right-3 rounded-full bg-stone-900/80 px-3 py-1 text-xs font-medium text-stone-50">
+   462→                      Starting at {service.startingAt}
+   463→                    </div>
+   464→                  </div>
+   465→
+   466→                  <div className="flex h-full flex-col p-6">
+   467→                    <div className="mb-3 flex items-center gap-2">
+   468→                      <span className="flex size-9 items-center justify-center rounded-full bg-orange-100 text-orange-700">
+   469→                        <Icon className="size-5" />
+   470→                      </span>
+   471→                      <h3 className="text-xl font-semibold text-stone-900">{service.label}</h3>
+   472→                    </div>
+   473→                    <p className="text-sm leading-relaxed text-stone-600">{service.longBlurb}</p>
+   474→
+   475→                    <ul className="mt-4 space-y-2">
+   476→                      {service.bullets.map((b) => (
+   477→                        <li key={b} className="flex items-start gap-2 text-sm text-stone-700">
+   478→                          <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-orange-600" />
+   479→                          <span>{b}</span>
+   480→                        </li>
+   481→                      ))}
+   482→                    </ul>
+   483→
+   484→                    <a
+   485→                      href="#contact"
+   486→                      className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-orange-700 transition-colors hover:text-orange-800"
+   487→                    >
+   488→                      Ask Rick about {service.label.toLowerCase()}
+   489→                      <ArrowRight className="size-4" />
+   490→                    </a>
+   491→                  </div>
+   492→                </Card>
+   493→              </motion.div>
+   494→            );
+   495→          })}
+   496→        </motion.div>
+   497→      </div>
+   498→    </section>
+   499→  );
+   500→}
+   501→
+   502→/* -------------------------------------------------------------------------- */
+   503→/*                              How Rick works                                */
+   504→/* -------------------------------------------------------------------------- */
+   505→
+   506→function HowRickWorks() {
+   507→  const steps = [
+   508→    {
+   509→      icon: Phone,
+   510→      title: 'Tell Rick what\u2019s broken',
+   511→      body: `Call or text me at ${BUSINESS.phone}. I'll ask a few questions and give you a flat, upfront price — usually on the spot.`,
+   512→    },
+   513→    {
+   514→      icon: Calendar,
+   515→      title: 'Pick a time that works',
+   516→      body: "I'll show up when I say I will. Most jobs get on the calendar within a week; emergencies get same-day.",
+   517→    },
+   518→    {
+   519→      icon: Smile,
+   520→      title: 'Rick fixes it, cleans up, leaves',
+   521→      body: "I do the work, sweep the floor, and stand behind it for 12 months. You pay what I quoted — no surprise add-ons.",
+   522→    },
+   523→  ];
+   524→
+   525→  return (
+   526→    <section className="bg-white py-20 md:py-28">
+   527→      <div className="mx-auto max-w-7xl px-6">
+   528→        <Reveal className="mx-auto max-w-2xl text-center">
+   529→          <p className="text-sm font-semibold uppercase tracking-widest text-orange-700">
+   530→            How Rick works
+   531→          </p>
+   532→          <h2 className="mt-2 text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
+   533→            Three steps. No surprises.
+   534→          </h2>
+   535→        </Reveal>
+   536→
+   537→        <motion.ol
+   538→          variants={stagger}
+   539→          initial="hidden"
+   540→          whileInView="show"
+   541→          viewport={{ once: true, margin: '-60px' }}
+   542→          className="mt-12 grid gap-8 md:grid-cols-3"
+   543→        >
+   544→          {steps.map((step, i) => (
+   545→            <motion.li key={step.title} variants={fadeUp}>
+   546→              <Card className="h-full border-stone-300 bg-stone-50 p-6 text-center">
+   547→                <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-orange-600 text-lg font-bold text-stone-50 shadow-md">
+   548→                  {i + 1}
+   549→                </div>
+   550→                <div className="mt-4 flex justify-center">
+   551→                  <span className="flex size-10 items-center justify-center rounded-full bg-orange-100 text-orange-700">
+   552→                    <step.icon className="size-5" />
+   553→                  </span>
+   554→                </div>
+   555→                <h3 className="mt-3 text-lg font-semibold text-stone-900">{step.title}</h3>
+   556→                <p className="mt-2 text-sm leading-relaxed text-stone-600">{step.body}</p>
+   557→              </Card>
+   558→            </motion.li>
+   559→          ))}
+   560→        </motion.ol>
+   561→      </div>
+   562→    </section>
+   563→  );
+   564→}
+   565→
+   566→/* -------------------------------------------------------------------------- */
+   567→/*                             Work gallery                                   */
+   568→/* -------------------------------------------------------------------------- */
+   569→
+   570→type FilterKey = 'all' | 'plumbing' | 'carpentry' | 'power_washing';
+   571→
+   572→const FILTERS: { key: FilterKey; label: string }[] = [
+   573→  { key: 'all', label: 'All' },
+   574→  { key: 'plumbing', label: 'Plumbing' },
+   575→  { key: 'carpentry', label: 'Carpentry' },
+   576→  { key: 'power_washing', label: 'Power Washing' },
+   577→];
+   578→
+   579→function categoryLabelForSrc(src: string): string {
+   580→  // Quick reverse-lookup using GALLERY_BY_CATEGORY buckets.
+   581→  const entry = (Object.keys(GALLERY_BY_CATEGORY) as (keyof typeof GALLERY_BY_CATEGORY)[]).find(
+   582→    (cat) => cat !== 'all' && GALLERY_BY_CATEGORY[cat].includes(src),
+   583→  );
+   584→  if (!entry) return 'Project';
+   585→  return entry
+   586→    .split('_')
+   587→    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+   588→    .join(' ');
+   589→}
+   590→
+   591→function WorkGallery() {
+   592→  const [filter, setFilter] = useState<FilterKey>('all');
+   593→  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+   594→
+   595→  const sources = GALLERY_BY_CATEGORY[filter].slice(0, 9);
+   596→  const activeCaption = lightboxSrc ? captionFor(lightboxSrc) : null;
+   597→
+   598→  return (
+   599→    <section id="work" className="bg-stone-100 py-20 md:py-28">
+   600→      <div className="mx-auto max-w-7xl px-6">
+   601→        <Reveal className="mx-auto max-w-2xl text-center">
+   602→          <p className="text-sm font-semibold uppercase tracking-widest text-orange-700">
+   603→            Recent work
+   604→          </p>
+   605→          <h2 className="mt-2 text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
+   606→            Some of the jobs Rick&apos;s done lately.
+   607→          </h2>
+   608→        </Reveal>
+   609→
+   610→        {/* Filter pills */}
+   611→        <div className="mt-8 flex flex-wrap items-center justify-center gap-2" role="tablist" aria-label="Filter work by category">
+   612→          {FILTERS.map((f) => {
+   613→            const active = filter === f.key;
+   614→            return (
+   615→              <button
+   616→                key={f.key}
+   617→                type="button"
+   618→                role="tab"
+   619→                aria-selected={active}
+   620→                onClick={() => setFilter(f.key)}
+   621→                className={`inline-flex items-center rounded-full border px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-600 focus-visible:ring-offset-2 ${
+   622→                  active
+   623→                    ? 'border-orange-600 bg-orange-600 text-stone-50'
+   624→                    : 'border-stone-300 bg-white text-stone-700 hover:border-orange-300 hover:bg-orange-50'
+   625→                }`}
+   626→              >
+   627→                {f.label}
+   628→              </button>
+   629→            );
+   630→          })}
+   631→        </div>
+   632→
+   633→        {/* Grid */}
+   634→        <motion.div
+   635→          key={filter}
+   636→          variants={stagger}
+   637→          initial="hidden"
+   638→          animate="show"
+   639→          className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+   640→        >
+   641→          {sources.map((src) => {
+   642→            const caption = captionFor(src);
+   643→            const cat = categoryLabelForSrc(src);
+   644→            return (
+   645→              <motion.button
+   646→                key={src}
+   647→                variants={fadeUp}
+   648→                type="button"
+   649→                onClick={() => setLightboxSrc(src)}
+   650→                className="group relative aspect-[4/3] overflow-hidden rounded-xl border border-stone-300 bg-stone-200 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-600 focus-visible:ring-offset-2"
+   651→                aria-label={`Open photo: ${caption.title}`}
+   652→              >
+   653→                <img
+   654→                  src={src}
+   655→                  alt={caption.title}
+   656→                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+   657→                  loading="lazy"
+   658→                />
+   659→                <div className="absolute inset-0 bg-gradient-to-t from-stone-900/85 via-stone-900/15 to-transparent opacity-90" />
+   660→                <div className="absolute inset-x-0 bottom-0 p-4">
+   661→                  <Badge className="border-orange-200 bg-stone-50/95 text-orange-700 hover:bg-stone-50/95">
+   662→                    {cat}
+   663→                  </Badge>
+   664→                  <p className="mt-2 text-sm font-semibold text-stone-50">{caption.title}</p>
+   665→                </div>
+   666→              </motion.button>
+   667→            );
+   668→          })}
+   669→        </motion.div>
+   670→      </div>
+   671→
+   672→      {/* Lightbox */}
+   673→      <Dialog open={!!lightboxSrc} onOpenChange={(o) => !o && setLightboxSrc(null)}>
+   674→        <DialogContent className="max-w-3xl border-stone-300 bg-stone-50 p-0">
+   675→          {activeCaption && lightboxSrc && (
+   676→            <>
+   677→              <div className="overflow-hidden rounded-t-lg">
+   678→                <img
+   679→                  src={lightboxSrc}
+   680→                  alt={activeCaption.title}
+   681→                  className="max-h-[70vh] w-full object-contain bg-stone-900"
+   682→                />
+   683→              </div>
+   684→              <DialogHeader className="px-6 pb-2 pt-4">
+   685→                <div className="flex items-center gap-2">
+   686→                  <Badge className="border-orange-200 bg-orange-100 text-orange-700 hover:bg-orange-100">
+   687→                    {categoryLabelForSrc(lightboxSrc)}
+   688→                  </Badge>
+   689→                </div>
+   690→                <DialogTitle className="font-serif text-xl text-stone-900">
+   691→                  {activeCaption.title}
+   692→                </DialogTitle>
+   693→                <DialogDescription className="text-stone-600">
+   694→                  {activeCaption.blurb || 'A recent project from Rick Rodriguez at R&R Handyman Services.'}
+   695→                </DialogDescription>
+   696→              </DialogHeader>
+   697→            </>
+   698→          )}
+   699→        </DialogContent>
+   700→      </Dialog>
+   701→    </section>
+   702→  );
+   703→}
+   704→
+   705→/* -------------------------------------------------------------------------- */
+   706→/*                              Testimonials                                 */
+   707→/* -------------------------------------------------------------------------- */
+   708→
+   709→function Testimonials() {
+   710→  const picks = [TESTIMONIALS[0], TESTIMONIALS[2]];
+   711→
+   712→  function initials(name: string): string {
+   713→    return name
+   714→      .split(/\s|&|and/i)
+   715→      .map((p) => p.trim().charAt(0))
+   716→      .filter(Boolean)
+   717→      .slice(0, 2)
+   718→      .join('')
+   719→      .toUpperCase();
+   720→  }
+   721→
+   722→  return (
+   723→    <section id="reviews" className="bg-white py-20 md:py-28">
+   724→      <div className="mx-auto max-w-7xl px-6">
+   725→        <Reveal className="mx-auto max-w-2xl text-center">
+   726→          <p className="text-sm font-semibold uppercase tracking-widest text-orange-700">
+   727→            From the neighbors
+   728→          </p>
+   729→          <h2 className="mt-2 text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
+   730→            What the neighbors are saying.
+   731→          </h2>
+   732→        </Reveal>
+   733→
+   734→        <motion.div
+   735→          variants={stagger}
+   736→          initial="hidden"
+   737→          whileInView="show"
+   738→          viewport={{ once: true, margin: '-60px' }}
+   739→          className="mt-12 grid gap-6 md:grid-cols-2"
+   740→        >
+   741→          {picks.map((t) => (
+   742→            <motion.div key={t.name} variants={fadeUp}>
+   743→              <Card className="h-full border-stone-300 bg-stone-50 p-6 shadow-sm">
+   744→                <div className="flex items-center justify-between">
+   745→                  <StarsRow />
+   746→                  <span className="text-sm font-semibold text-stone-500">5.0</span>
+   747→                </div>
+   748→                <blockquote className="mt-4 text-lg leading-relaxed text-stone-800">
+   749→                  &ldquo;{t.quote}&rdquo;
+   750→                </blockquote>
+   751→                <div className="mt-6 flex items-center gap-3 border-t border-stone-200 pt-4">
+   752→                  <div className="flex size-11 items-center justify-center rounded-full bg-orange-600 text-sm font-semibold text-stone-50">
+   753→                    {initials(t.name)}
+   754→                  </div>
+   755→                  <div className="leading-tight">
+   756→                    <p className="font-semibold text-stone-900">{t.name}</p>
+   757→                    <p className="text-xs text-stone-500">
+   758→                      {t.location} · {t.service}
+   759→                    </p>
+   760→                  </div>
+   761→                </div>
+   762→              </Card>
+   763→            </motion.div>
+   764→          ))}
+   765→        </motion.div>
+   766→      </div>
+   767→    </section>
+   768→  );
+   769→}
+   770→
+   771→/* -------------------------------------------------------------------------- */
+   772→/*                            Trust badges band                               */
+   773→/* -------------------------------------------------------------------------- */
+   774→
+   775→function TrustBand() {
+   776→  const badges = [
+   777→    { icon: ShieldCheck, label: 'Licensed & Insured' },
+   778→    { icon: Wrench, label: `${BUSINESS.yearsInBusiness}+ Years` },
+   779→    { icon: Hammer, label: `${BUSINESS.jobsCompleted.toLocaleString()}+ Jobs` },
+   780→    { icon: Star, label: `${BUSINESS.avgRating}★ from ${BUSINESS.reviewCount} Reviews` },
+   781→  ];
+   782→
+   783→  return (
+   784→    <section className="border-y border-orange-200 bg-orange-50 py-10">
+   785→      <div className="mx-auto max-w-7xl px-6">
+   786→        <ul className="grid grid-cols-2 gap-6 md:grid-cols-4">
+   787→          {badges.map((b) => (
+   788→            <li key={b.label} className="flex items-center justify-center gap-2 text-center md:justify-start">
+   789→              <b.icon className="size-5 shrink-0 text-orange-700" />
+   790→              <span className="text-sm font-semibold text-stone-800 sm:text-base">{b.label}</span>
+   791→            </li>
+   792→          ))}
+   793→        </ul>
+   794→      </div>
+   795→    </section>
+   796→  );
+   797→}
+   798→
+   799→/* -------------------------------------------------------------------------- */
+   800→/*                                Lead form                                   */
+   801→/* -------------------------------------------------------------------------- */
+   802→
+   803→function LeadForm() {
+   804→  const [formKey, setFormKey] = useState(0);
+   805→
+   806→  const { submit: handleSubmit, submitting } = useLeadForm({
+   807→    design: 'trusted',
+   808→    successTitle: 'Got it — Rick will call you back within 24 hours.',
+   809→    successDescription: 'For emergencies, call (555) 014-2837 directly.',
+   810→    onAfterSubmit: () => setFormKey((k) => k + 1),
+   811→  });
+   812→
+   813→  const contactRows = [
+   814→    { icon: Phone, label: 'Call or text', value: BUSINESS.phone, href: BUSINESS.phoneHref },
+   815→    { icon: Mail, label: 'Email', value: BUSINESS.email, href: BUSINESS.emailHref },
+   816→    {
+   817→      icon: Clock,
+   818→      label: 'Hours',
+   819→      value: `${BUSINESS.hours.weekdays} · ${BUSINESS.hours.saturday}`,
+   820→    },
+   821→    {
+   822→      icon: MapPin,
+   823→      label: 'Service area',
+   824→      value: BUSINESS.serviceArea,
+   825→    },
+   826→  ];
+   827→
+   828→  return (
+   829→    <section id="contact" className="bg-stone-100 py-20 md:py-28">
+   830→      <div className="mx-auto grid max-w-7xl items-start gap-12 px-6 md:grid-cols-2 md:gap-16">
+   831→        <Reveal>
+   832→          <p className="text-sm font-semibold uppercase tracking-widest text-orange-700">
+   833→            Tell Rick
+   834→          </p>
+   835→          <h2 className="mt-2 text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
+   836→            Tell Rick what you need.
+   837→          </h2>
+   838→          <p className="mt-4 max-w-md text-lg leading-relaxed text-stone-700">
+   839→            Drop your info below and Rick will call you back within 24 hours — usually sooner. For
+   840→            after-hours emergencies, just call the shop line directly.
+   841→          </p>
+   842→
+   843→          <ul className="mt-8 space-y-4">
+   844→            {contactRows.map((row) => {
+   845→              const inner = (
+   846→                <>
+   847→                  <span className="flex size-10 items-center justify-center rounded-full bg-orange-100 text-orange-700">
+   848→                    <row.icon className="size-5" />
+   849→                  </span>
+   850→                  <span className="flex flex-col">
+   851→                    <span className="text-xs uppercase tracking-wider text-stone-500">
+   852→                      {row.label}
+   853→                    </span>
+   854→                    <span className="text-base font-medium text-stone-900">{row.value}</span>
+   855→                  </span>
+   856→                </>
+   857→              );
+   858→              return (
+   859→                <li key={row.label}>
+   860→                  {row.href ? (
+   861→                    <a
+   862→                      href={row.href}
+   863→                      className="flex items-center gap-4 rounded-lg p-1 transition-colors hover:text-orange-700"
+   864→                    >
+   865→                      {inner}
+   866→                    </a>
+   867→                  ) : (
+   868→                    <div className="flex items-center gap-4 p-1">{inner}</div>
+   869→                  )}
+   870→                </li>
+   871→              );
+   872→            })}
+   873→          </ul>
+   874→        </Reveal>
+   875→
+   876→        <Reveal delay={0.1}>
+   877→          <Card className="border-stone-300 bg-white p-6 shadow-lg md:p-8">
+   878→            <CardHeader className="px-0 pt-0">
+   879→              <CardTitle className="font-serif text-2xl text-stone-900">
+   880→                Send Rick a message
+   881→              </CardTitle>
+   882→              <CardDescription className="text-stone-600">
+   883→                No obligation. Rick replies himself — usually the same day.
+   884→              </CardDescription>
+   885→            </CardHeader>
+   886→
+   887→            <CardContent className="px-0">
+   888→              <form key={formKey} onSubmit={handleSubmit} className="space-y-4">
+   889→                <div className="space-y-2">
+   890→                  <Label htmlFor="trusted-name" className="text-stone-800">
+   891→                    Your name <span className="text-orange-700">*</span>
+   892→                  </Label>
+   893→                  <Input
+   894→                    id="trusted-name"
+   895→                    name="name"
+   896→                    required
+   897→                    autoComplete="name"
+   898→                    placeholder="Pat Springfield"
+   899→                    className="border-stone-300 bg-stone-50 focus-visible:border-orange-600 focus-visible:ring-orange-600/30"
+   900→                  />
+   901→                </div>
+   902→
+   903→                <div className="grid gap-4 sm:grid-cols-2">
+   904→                  <div className="space-y-2">
+   905→                    <Label htmlFor="trusted-phone" className="text-stone-800">
+   906→                      Phone <span className="text-orange-700">*</span>
+   907→                    </Label>
+   908→                    <Input
+   909→                      id="trusted-phone"
+   910→                      name="phone"
+   911→                      type="tel"
+   912→                      required
+   913→                      autoComplete="tel"
+   914→                      placeholder="(555) 000-0000"
+   915→                      className="border-stone-300 bg-stone-50 focus-visible:border-orange-600 focus-visible:ring-orange-600/30"
+   916→                    />
+   917→                  </div>
+   918→                  <div className="space-y-2">
+   919→                    <Label htmlFor="trusted-email" className="text-stone-800">
+   920→                      Email <span className="text-stone-400">(optional)</span>
+   921→                    </Label>
+   922→                    <Input
+   923→                      id="trusted-email"
+   924→                      name="email"
+   925→                      type="email"
+   926→                      autoComplete="email"
+   927→                      placeholder="you@example.com"
+   928→                      className="border-stone-300 bg-stone-50 focus-visible:border-orange-600 focus-visible:ring-orange-600/30"
+   929→                    />
+   930→                  </div>
+   931→                </div>
+   932→
+   933→                <div className="space-y-2">
+   934→                  <Label htmlFor="trusted-service" className="text-stone-800">
+   935→                    What do you need?
+   936→                  </Label>
+   937→                  <Select name="service" defaultValue="">
+   938→                    <SelectTrigger
+   939→                      id="trusted-service"
+   940→                      className="w-full border-stone-300 bg-stone-50 focus-visible:border-orange-600 focus-visible:ring-orange-600/30"
+   941→                    >
+   942→                      <SelectValue placeholder="Pick a trade — or ask Rick" />
+   943→                    </SelectTrigger>
+   944→                    <SelectContent className="border-stone-300 bg-white">
+   945→                      <SelectItem value="plumbing">Plumbing</SelectItem>
+   946→                      <SelectItem value="carpentry">Carpentry</SelectItem>
+   947→                      <SelectItem value="power-washing">Power Washing</SelectItem>
+   948→                      <SelectItem value="not-sure">Not sure / multiple</SelectItem>
+   949→                    </SelectContent>
+   950→                  </Select>
+   951→                </div>
+   952→
+   953→                <div className="space-y-2">
+   954→                  <Label htmlFor="trusted-message" className="text-stone-800">
+   955→                    Anything else Rick should know?
+   956→                  </Label>
+   957→                  <Textarea
+   958→                    id="trusted-message"
+   959→                    name="message"
+   960→                    rows={4}
+   961→                    placeholder="e.g., kitchen faucet started dripping Tuesday, looks like the shutoff is stuck too."
+   962→                    className="resize-y border-stone-300 bg-stone-50 focus-visible:border-orange-600 focus-visible:ring-orange-600/30"
+   963→                  />
+   964→                </div>
+   965→
+   966→                <Button
+   967→                  type="submit"
+   968→                  size="lg"
+   969→                  disabled={submitting}
+   970→                  className="w-full bg-orange-600 text-stone-50 hover:bg-orange-700 disabled:opacity-60 disabled:cursor-not-allowed"
+   971→                >
+   972→                  {submitting ? (
+   973→                    <>
+   974→                      <Loader2 className="size-4 animate-spin" />
+   975→                      Sending…
+   976→                    </>
+   977→                  ) : (
+   978→                    <>
+   979→                      <Send className="size-4" />
+   980→                      Send Rick a Message
+   981→                    </>
+   982→                  )}
+   983→                </Button>
+   984→                <p className="text-center text-xs text-stone-500">
+   985→                  By sending, you agree Rick can call or text you back about your project.
+   986→                </p>
+   987→              </form>
+   988→            </CardContent>
+   989→          </Card>
+   990→        </Reveal>
+   991→      </div>
+   992→    </section>
+   993→  );
+   994→}
+   995→
+   996→/* -------------------------------------------------------------------------- */
+   997→/*                                   FAQ                                      */
+   998→/* -------------------------------------------------------------------------- */
+   999→
+  1000→function FAQ() {
+  1001→  return (
+  1002→    <section id="faq" className="bg-white py-20 md:py-28">
+  1003→      <div className="mx-auto max-w-3xl px-6">
+  1004→        <Reveal className="text-center">
+  1005→          <p className="text-sm font-semibold uppercase tracking-widest text-orange-700">
+  1006→            Quick answers
+  1007→          </p>
+  1008→          <h2 className="mt-2 text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
+  1009→            Questions Rick hears a lot.
+  1010→          </h2>
+  1011→        </Reveal>
+  1012→
+  1013→        <Reveal delay={0.1} className="mt-10">
+  1014→          <Accordion
+  1015→            type="single"
+  1016→            collapsible
+  1017→            className="rounded-xl border border-stone-300 bg-stone-50 px-4 md:px-6"
+  1018→          >
+  1019→            {FAQS.map((faq, i) => (
+  1020→              <AccordionItem
+  1021→                key={faq.q}
+  1022→                value={`faq-${i}`}
+  1023→                className="border-b border-stone-200 last:border-b-0"
+  1024→              >
+  1025→                <AccordionTrigger className="text-left text-base font-semibold text-stone-900 hover:text-orange-700 hover:no-underline">
+  1026→                  {faq.q}
+  1027→                </AccordionTrigger>
+  1028→                <AccordionContent className="text-sm leading-relaxed text-stone-700">
+  1029→                  {faq.a}
+  1030→                </AccordionContent>
+  1031→              </AccordionItem>
+  1032→            ))}
+  1033→          </Accordion>
+  1034→        </Reveal>
+  1035→      </div>
+  1036→    </section>
+  1037→  );
+  1038→}
+  1039→
+  1040→/* -------------------------------------------------------------------------- */
+  1041→/*                              Service area                                  */
+  1042→/* -------------------------------------------------------------------------- */
+  1043→
+  1044→function ServiceArea() {
+  1045→  return (
+  1046→    <section className="bg-stone-100 py-20 md:py-28">
+  1047→      <div className="mx-auto max-w-5xl px-6">
+  1048→        <Reveal>
+  1049→          <Card className="overflow-hidden border-stone-300 bg-white shadow-sm">
+  1050→            <div className="grid items-center gap-8 p-6 md:grid-cols-2 md:p-10">
+  1051→              <div>
+  1052→                <p className="text-sm font-semibold uppercase tracking-widest text-orange-700">
+  1053→                  Where Rick works
+  1054→                </p>
+  1055→                <h2 className="mt-2 text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
+  1056→                  Serving Springfield County &amp; the surrounding towns.
+  1057→                </h2>
+  1058→                <p className="mt-4 text-base leading-relaxed text-stone-600">
+  1059→                  Not on the list? Call — I cover most of Springfield County and I&apos;m happy to
+  1060→                  drive for the right job.
+  1061→                </p>
+  1062→                <Button
+  1063→                  asChild
+  1064→                  className="mt-6 bg-orange-600 text-stone-50 hover:bg-orange-700"
+  1065→                >
+  1066→                  <a href={BUSINESS.phoneHref}>
+  1067→                    <Phone className="size-4" />
+  1068→                    Call {BUSINESS.phone}
+  1069→                  </a>
+  1070→                </Button>
+  1071→              </div>
+  1072→
+  1073→              <ul className="grid grid-cols-2 gap-2 sm:grid-cols-2">
+  1074→                {BUSINESS.citiesServed.map((city) => (
+  1075→                  <li
+  1076→                    key={city}
+  1077→                    className="inline-flex items-center gap-2 rounded-lg border border-stone-300 bg-stone-50 px-3 py-2 text-sm font-medium text-stone-800"
+  1078→                  >
+  1079→                    <MapPin className="size-4 text-orange-700" />
+  1080→                    {city}
+  1081→                  </li>
+  1082→                ))}
+  1083→              </ul>
+  1084→            </div>
+  1085→          </Card>
+  1086→        </Reveal>
+  1087→      </div>
+  1088→    </section>
+  1089→  );
+  1090→}
+  1091→
+  1092→/* -------------------------------------------------------------------------- */
+  1093→/*                              Final CTA banner                              */
+  1094→/* -------------------------------------------------------------------------- */
+  1095→
+  1096→function FinalCTA() {
+  1097→  return (
+  1098→    <section className="bg-stone-900 py-16 text-stone-50 md:py-20">
+  1099→      <div className="mx-auto max-w-4xl px-6 text-center">
+  1100→        <Reveal>
+  1101→          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
+  1102→            Ready to get this off your to-do list?
+  1103→          </h2>
+  1104→          <p className="mt-4 text-lg text-stone-300">
+  1105→            Call or text Rick directly — 7 days a week. Same-day quotes on most jobs.
+  1106→          </p>
+  1107→          <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+  1108→            <Button
+  1109→              asChild
+  1110→              size="lg"
+  1111→              className="bg-orange-600 text-stone-50 hover:bg-orange-700"
+  1112→            >
+  1113→              <a href={BUSINESS.phoneHref}>
+  1114→                <Phone className="size-4" />
+  1115→                {BUSINESS.phone}
+  1116→              </a>
+  1117→            </Button>
+  1118→            <Button
+  1119→              asChild
+  1120→              size="lg"
+  1121→              variant="outline"
+  1122→              className="border-stone-600 bg-transparent text-stone-50 hover:bg-stone-800"
+  1123→            >
+  1124→              <a href="#contact">
+  1125→                <Mail className="size-4" />
+  1126→                Send a message
+  1127→              </a>
+  1128→            </Button>
+  1129→          </div>
+  1130→          <p className="mt-6 text-sm text-stone-400">
+  1131→            Text or call, 7 days a week · Emergency plumbing welcome
+  1132→          </p>
+  1133→        </Reveal>
+  1134→      </div>
+  1135→    </section>
+  1136→  );
+  1137→}
+  1138→
+  1139→/* -------------------------------------------------------------------------- */
+  1140→/*                                  Footer                                    */
+  1141→/* -------------------------------------------------------------------------- */
+  1142→
+  1143→function Footer() {
+  1144→  return (
+  1145→    <footer className="mt-auto bg-stone-900 text-stone-400">
+  1146→      <div className="mx-auto max-w-7xl px-6 py-14">
+  1147→        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
+  1148→          {/* Brand */}
+  1149→          <div>
+  1150→            <div className="flex items-center gap-3">
+  1151→              <span className="flex size-9 items-center justify-center rounded-full bg-orange-600 text-stone-50">
+  1152→                <Hammer className="size-4" />
+  1153→              </span>
+  1154→              <p className="font-serif text-lg italic text-stone-50">Rick Rodriguez</p>
+  1155→            </div>
+  1156→            <p className="mt-3 text-sm leading-relaxed">
+  1157→              {BUSINESS.brand} — plumbing, carpentry, and power washing done right,
+  1158→              by a guy who actually shows up.
+  1159→            </p>
+  1160→            <p className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-stone-300">
+  1161→              <ShieldCheck className="size-4 text-orange-500" />
+  1162→              Licensed &amp; Insured
+  1163→            </p>
+  1164→          </div>
+  1165→
+  1166→          {/* Services */}
+  1167→          <div>
+  1168→            <h3 className="text-sm font-semibold uppercase tracking-wider text-stone-200">Services</h3>
+  1169→            <ul className="mt-4 space-y-2 text-sm">
+  1170→              {BUSINESS.services.map((s) => (
+  1171→                <li key={s.id}>
+  1172→                  <a href="#services" className="transition-colors hover:text-orange-400">
+  1173→                    {s.label}
+  1174→                  </a>
+  1175→                </li>
+  1176→              ))}
+  1177→            </ul>
+  1178→          </div>
+  1179→
+  1180→          {/* Service area */}
+  1181→          <div>
+  1182→            <h3 className="text-sm font-semibold uppercase tracking-wider text-stone-200">
+  1183→              Service area
+  1184→            </h3>
+  1185→            <ul className="mt-4 space-y-2 text-sm">
+  1186→              {BUSINESS.citiesServed.slice(0, 6).map((city) => (
+  1187→                <li key={city} className="flex items-center gap-1.5">
+  1188→                  <MapPin className="size-3.5 text-orange-500" />
+  1189→                  {city}
+  1190→                </li>
+  1191→              ))}
+  1192→              <li className="pt-1 text-xs text-stone-500">& surrounding towns</li>
+  1193→            </ul>
+  1194→          </div>
+  1195→
+  1196→          {/* Hours + contact */}
+  1197→          <div>
+  1198→            <h3 className="text-sm font-semibold uppercase tracking-wider text-stone-200">
+  1199→              Hours &amp; contact
+  1200→            </h3>
+  1201→            <ul className="mt-4 space-y-3 text-sm">
+  1202→              <li className="flex items-start gap-2">
+  1203→                <Clock className="mt-0.5 size-4 shrink-0 text-orange-500" />
+  1204→                <span>
+  1205→                  {BUSINESS.hours.weekdays}
+  1206→                  <br />
+  1207→                  {BUSINESS.hours.saturday}
+  1208→                  <br />
+  1209→                  {BUSINESS.hours.sunday}
+  1210→                </span>
+  1211→              </li>
+  1212→              <li>
+  1213→                <a
+  1214→                  href={BUSINESS.phoneHref}
+  1215→                  className="flex items-center gap-2 transition-colors hover:text-orange-400"
+  1216→                >
+  1217→                  <Phone className="size-4 shrink-0 text-orange-500" />
+  1218→                  {BUSINESS.phone}
+  1219→                </a>
+  1220→              </li>
+  1221→              <li>
+  1222→                <a
+  1223→                  href={BUSINESS.emailHref}
+  1224→                  className="flex items-center gap-2 transition-colors hover:text-orange-400"
+  1225→                >
+  1226→                  <Mail className="size-4 shrink-0 text-orange-500" />
+  1227→                  {BUSINESS.email}
+  1228→                </a>
+  1229→              </li>
+  1230→            </ul>
+  1231→          </div>
+  1232→        </div>
+  1233→
+  1234→        <div className="mt-10 flex flex-col items-center justify-between gap-2 border-t border-stone-800 pt-6 text-xs text-stone-500 sm:flex-row">
+  1235→          <p>© 2024 {BUSINESS.brand}. All rights reserved.</p>
+  1236→          <p>Website mockup — sample design</p>
+  1237→        </div>
+  1238→      </div>
+  1239→    </footer>
+  1240→  );
+  1241→}
+  1242→
+  1243→/* -------------------------------------------------------------------------- */
+  1244→/*                              Main component                                */
+  1245→/* -------------------------------------------------------------------------- */
+  1246→
+  1247→export default function DesignTrusted() {
+  1248→  return (
+  1249→    <div className="min-h-screen flex flex-col bg-stone-100">
+  1250→      <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[60] focus:rounded-md focus:bg-orange-600 focus:px-4 focus:py-2 focus:text-stone-50">
+  1251→        Skip to content
+  1252→      </a>
+  1253→
+  1254→      <TopNav />
+  1255→
+  1256→      <main id="main" className="flex-1">
+  1257→        <Hero />
+  1258→        <MeetRick />
+  1259→        <Services />
+  1260→        <HowRickWorks />
+  1261→        <WorkGallery />
+  1262→        <Testimonials />
+  1263→        <TrustBand />
+  1264→        <LeadForm />
+  1265→        <FAQ />
+  1266→        <ServiceArea />
+  1267→        <FinalCTA />
+  1268→      </main>
+  1269→
+  1270→      <Footer />
+  1271→    </div>
+  1272→  );
+  1273→}
+  1274→
