@@ -3,7 +3,7 @@ import { BUSINESS } from '@/lib/business-info';
 
 // In production this would be the real public domain. For the mockup we
 // use a placeholder so the sitemap at least renders valid URLs.
-const SITE_URL = 'https://rrhandyman.example';
+const SITE_URL = 'https://rrhandyman.downriver.com';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();

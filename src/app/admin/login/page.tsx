@@ -114,7 +114,7 @@ export default function AdminLoginPage() {
 
             <div className="mt-4 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
               <span className="font-semibold">Mockup password:</span>{' '}
-              <code className="rounded bg-amber-100 px-1 py-0.5 font-mono">rr-admin-2024</code>
+              <code className="rounded bg-amber-100 px-1 py-0.5 font-mono">RR-admin-2026</code>
               <p className="mt-1 text-amber-700">
                 Change <code className="font-mono">ADMIN_PASSWORD</code> env var before going live.
               </p>

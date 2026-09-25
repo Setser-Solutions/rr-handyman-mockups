@@ -6,7 +6,7 @@ import { createHmac, timingSafeEqual } from 'crypto';
  *
  * Approach:
  * - A single shared password stored in ADMIN_PASSWORD env var (default
- *   "rr-admin-2024" for the mockup — change before going live).
+ *   "RR-admin-2026" for the mockup — change before going live).
  * - On POST /api/admin/auth/login with the right password, we set an
  *   HttpOnly cookie `rr_admin` containing an HMAC of the password.
  * - verifyAdminAuth checks that cookie against the expected HMAC.
@@ -18,10 +18,10 @@ import { createHmac, timingSafeEqual } from 'crypto';
 
 const ADMIN_COOKIE = 'rr_admin';
 // Mockup default password — the client should override via env var.
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'rr-admin-2024';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'RR-admin-2026';
 // Secret used to HMAC the cookie value (so the cookie isn't just the
 // plaintext password). Mockup default; override via env in production.
-const ADMIN_SECRET = process.env.ADMIN_SECRET || 'rr-handyman-mockup-secret-2024';
+const ADMIN_SECRET = process.env.ADMIN_SECRET || 'rr-handyman-downriver-secret-2026';
 
 function expectedToken(): string {
   return createHmac('sha256', ADMIN_SECRET).update(ADMIN_PASSWORD).digest('hex');

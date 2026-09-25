@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { BUSINESS } from '@/lib/business-info';
 import { useEstimateStore, formatEstimate } from '@/lib/estimate-store';
 
-export type DesignKey = 'modern' | 'portfolio' | 'trusted';
+export type DesignKey = 'modern' | 'portfolio' | 'trusted' | 'final';
 
 export interface UseLeadFormOptions {
   /** Which mockup design the lead came from — recorded for A/B testing. */

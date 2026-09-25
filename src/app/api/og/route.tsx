@@ -255,7 +255,7 @@ export async function GET(req: Request) {
             justifyContent: 'space-between',
           }}
         >
-          <div>Licensed & Insured · Springfield County</div>
+          <div>Licensed & Insured · Downriver Michigan</div>
           <div>Free, flat-price quotes within 24 hours</div>
         </div>
       </div>

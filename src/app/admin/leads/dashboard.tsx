@@ -98,8 +98,8 @@ type DesignFilter = 'all' | DesignKey;
 const DESIGN_META: Record<DesignKey, { label: string; dot: string; badge: string }> = {
   modern: {
     label: 'Modern',
-    dot: 'bg-amber-500',
-    badge: 'border-amber-200 bg-amber-50 text-amber-700',
+    dot: 'bg-yellow-500',
+    badge: 'border-yellow-200 bg-yellow-50 text-yellow-700',
   },
   portfolio: {
     label: 'Portfolio',
@@ -108,8 +108,8 @@ const DESIGN_META: Record<DesignKey, { label: string; dot: string; badge: string
   },
   trusted: {
     label: 'Trusted',
-    dot: 'bg-orange-500',
-    badge: 'border-orange-200 bg-orange-50 text-orange-700',
+    dot: 'bg-yellow-500',
+    badge: 'border-yellow-200 bg-yellow-50 text-yellow-700',
   },
 };
 
@@ -202,10 +202,11 @@ function truncate(text: string, max = 60): string {
 // colored with a fixed palette. The center shows the total count.
 
 const SERVICE_COLORS: Record<string, string> = {
-  Plumbing: '#f59e0b',      // amber-500
-  Carpentry: '#059669',     // emerald-600
-  'Power Washing': '#ea580c', // orange-600
-  'Multiple / Not sure': '#78716c', // stone-500
+  Plumbing: '#3b82f6',      // blue-500
+  Carpentry: '#eab308',     // emerald-600
+  'Power Washing': '#64748b', // slate-500
+  'Multiple / Not sure': '#78716b',
+  Electrical: '#3b82f6', // stone-500
 };
 const SERVICE_COLOR_FALLBACK = '#d6d3d1'; // stone-300
 
@@ -335,9 +336,9 @@ function ServiceDonut({
 // ----- Design donut chart (pure SVG, no deps) -----
 // Same visual approach as ServiceDonut but for the 3 design variants.
 const DESIGN_COLORS: Record<DesignKey, string> = {
-  modern: '#f59e0b',    // amber-500
-  portfolio: '#10b981', // emerald-500
-  trusted: '#f97316',   // orange-500
+  modern: '#3b82f6',    // blue-500
+  portfolio: '#eab308', // emerald-500
+  trusted: '#64748b',   // slate-500
 };
 
 function DesignDonut({
@@ -520,7 +521,7 @@ function StarRow({ rating, size = 'size-3.5' }: { rating: number; size?: string 
           key={s}
           className={cn(
             size,
-            s <= rating ? 'fill-amber-500 text-amber-500' : 'fill-stone-100 text-stone-200',
+            s <= rating ? 'fill-yellow-500 text-yellow-500' : 'fill-stone-100 text-stone-200',
           )}
         />
       ))}
@@ -1093,7 +1094,7 @@ export default function AdminLeadsDashboard() {
       <header className="border-b border-stone-200 bg-white">
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
           <div className="flex items-start gap-3">
-            <div className="grid size-10 shrink-0 place-items-center rounded-lg bg-stone-900 text-sm font-bold text-amber-400">
+            <div className="grid size-10 shrink-0 place-items-center rounded-lg bg-stone-900 text-sm font-bold text-yellow-400">
               R&amp;R
             </div>
             <div>
@@ -1254,8 +1255,8 @@ export default function AdminLeadsDashboard() {
                 hint={`across ${stats.totalFeedback} notes`}
                 icon={Star}
               >
-                <span className="mt-2 inline-flex items-center gap-1 text-amber-500">
-                  <Star className="size-4 fill-amber-500" />
+                <span className="mt-2 inline-flex items-center gap-1 text-yellow-500">
+                  <Star className="size-4 fill-yellow-500" />
                   <span className="text-xs font-medium text-stone-500">
                     {stats.avgRating.toFixed(1)} / 5
                   </span>
@@ -1350,7 +1351,7 @@ export default function AdminLeadsDashboard() {
                             className={cn(
                               'w-full rounded-sm transition-all',
                               d.count > 0
-                                ? 'bg-amber-400 hover:bg-amber-500'
+                                ? 'bg-yellow-400 hover:bg-yellow-500'
                                 : 'bg-stone-100 hover:bg-stone-200',
                             )}
                             style={{ height: `${h}px` }}
@@ -1511,7 +1512,7 @@ export default function AdminLeadsDashboard() {
                       onClick={() => setStarredOnly((v) => !v)}
                       label="Show only starred leads"
                     >
-                      <Star className={cn('size-3', starredOnly && 'fill-amber-400 text-amber-500')} />
+                      <Star className={cn('size-3', starredOnly && 'fill-yellow-400 text-yellow-500')} />
                       {starredOnly ? 'Starred only' : 'Starred'}
                     </FilterPill>
                     <span className="mx-1 self-center text-xs font-medium text-stone-500">
@@ -1612,7 +1613,7 @@ export default function AdminLeadsDashboard() {
                 <CardContent className="p-0">
                   {/* Bulk-action bar (appears when leads are selected) */}
                   {selectedIds.size > 0 && (
-                    <div className="flex flex-wrap items-center gap-2 border-b border-stone-200 bg-amber-50/80 px-4 py-2.5">
+                    <div className="flex flex-wrap items-center gap-2 border-b border-stone-200 bg-yellow-50/80 px-4 py-2.5">
                       <span className="text-sm font-medium text-stone-900">
                         {selectedIds.size} selected
                       </span>
@@ -1754,9 +1755,9 @@ export default function AdminLeadsDashboard() {
                                 key={lead.id}
                                 onClick={() => openDetail(lead)}
                                 className={cn(
-                                  'cursor-pointer border-b border-stone-100 transition-colors hover:bg-amber-50/40',
-                                  isSelected && 'bg-amber-50/60',
-                                  isFocused && 'ring-2 ring-inset ring-stone-900/20 bg-amber-50/30',
+                                  'cursor-pointer border-b border-stone-100 transition-colors hover:bg-yellow-50/40',
+                                  isSelected && 'bg-yellow-50/60',
+                                  isFocused && 'ring-2 ring-inset ring-stone-900/20 bg-yellow-50/30',
                                 )}
                               >
                                 <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
@@ -1780,7 +1781,7 @@ export default function AdminLeadsDashboard() {
                                   <div className="flex items-center gap-2">
                                     {lead.starred && (
                                       <Star
-                                        className="size-3.5 fill-amber-400 text-amber-500"
+                                        className="size-3.5 fill-yellow-400 text-yellow-500"
                                         aria-label="Starred"
                                       />
                                     )}
@@ -1797,7 +1798,7 @@ export default function AdminLeadsDashboard() {
                                   <a
                                     href={telHref(lead.phone)}
                                     onClick={(e) => e.stopPropagation()}
-                                    className="inline-flex items-center gap-1.5 text-stone-700 transition-colors hover:text-amber-700 hover:underline"
+                                    className="inline-flex items-center gap-1.5 text-stone-700 transition-colors hover:text-blue-700 hover:underline"
                                   >
                                     <Phone className="size-3.5 text-stone-400" />
                                     {lead.phone}
@@ -1808,7 +1809,7 @@ export default function AdminLeadsDashboard() {
                                     <a
                                       href={`mailto:${lead.email}`}
                                       onClick={(e) => e.stopPropagation()}
-                                      className="inline-flex items-center gap-1.5 text-stone-700 transition-colors hover:text-amber-700 hover:underline"
+                                      className="inline-flex items-center gap-1.5 text-stone-700 transition-colors hover:text-blue-700 hover:underline"
                                     >
                                       <Mail className="size-3.5 text-stone-400" />
                                       <span className="truncate max-w-[180px]">
@@ -1868,11 +1869,11 @@ export default function AdminLeadsDashboard() {
                                       className={cn(
                                         'rounded p-1.5 transition-colors',
                                         lead.starred
-                                          ? 'text-amber-500 hover:bg-amber-50'
-                                          : 'text-stone-300 hover:bg-stone-100 hover:text-amber-500',
+                                          ? 'text-yellow-500 hover:bg-yellow-50'
+                                          : 'text-stone-300 hover:bg-stone-100 hover:text-yellow-500',
                                       )}
                                     >
-                                      <Star className={cn('size-4', lead.starred && 'fill-amber-400')} />
+                                      <Star className={cn('size-4', lead.starred && 'fill-yellow-400')} />
                                     </button>
                                     <button
                                       type="button"
@@ -2124,7 +2125,7 @@ export default function AdminLeadsDashboard() {
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2 pr-8">
                   {detailLead.starred && (
-                    <Star className="size-4 shrink-0 fill-amber-400 text-amber-500" aria-label="Starred" />
+                    <Star className="size-4 shrink-0 fill-yellow-400 text-yellow-500" aria-label="Starred" />
                   )}
                   <span className="truncate">{detailLead.name}</span>
                   {detailLead.contacted ? (
@@ -2151,7 +2152,7 @@ export default function AdminLeadsDashboard() {
                     <p className="text-xs font-semibold uppercase tracking-wide text-stone-400">Phone</p>
                     <a
                       href={telHref(detailLead.phone)}
-                      className="inline-flex items-center gap-1.5 text-sm font-medium text-stone-900 hover:text-amber-700"
+                      className="inline-flex items-center gap-1.5 text-sm font-medium text-stone-900 hover:text-blue-700"
                     >
                       <Phone className="size-3.5 text-stone-400" />
                       {detailLead.phone}
@@ -2162,7 +2163,7 @@ export default function AdminLeadsDashboard() {
                     {detailLead.email ? (
                       <a
                         href={`mailto:${detailLead.email}`}
-                        className="inline-flex items-center gap-1.5 text-sm font-medium text-stone-900 hover:text-amber-700"
+                        className="inline-flex items-center gap-1.5 text-sm font-medium text-stone-900 hover:text-blue-700"
                       >
                         <Mail className="size-3.5 text-stone-400" />
                         <span className="truncate">{detailLead.email}</span>
@@ -2222,10 +2223,10 @@ export default function AdminLeadsDashboard() {
                   variant="outline"
                   size="sm"
                   onClick={() => void toggleStarred(detailLead.id, !detailLead.starred)}
-                  className={detailLead.starred ? 'text-amber-600 hover:bg-amber-50' : 'text-stone-600 hover:bg-stone-100'}
+                  className={detailLead.starred ? 'text-yellow-600 hover:bg-yellow-50' : 'text-stone-600 hover:bg-stone-100'}
                   title={detailLead.starred ? 'Remove star' : 'Star this lead'}
                 >
-                  <Star className={cn('size-4', detailLead.starred && 'fill-amber-400')} />
+                  <Star className={cn('size-4', detailLead.starred && 'fill-yellow-400')} />
                   {detailLead.starred ? 'Starred' : 'Star'}
                 </Button>
                 <Button
@@ -2366,7 +2367,7 @@ export default function AdminLeadsDashboard() {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <span className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-stone-900 text-sm font-bold text-amber-400">
+              <span className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-stone-900 text-sm font-bold text-yellow-400">
                 ?
               </span>
               Keyboard shortcuts

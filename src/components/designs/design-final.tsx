@@ -139,7 +139,7 @@ function StarsRow({ className }: { className?: string }) {
       aria-label="5 out of 5 stars"
     >
       {Array.from({ length: 5 }).map((_, i) => (
-        <Star key={i} className="size-4 fill-amber-500 text-amber-500" />
+        <Star key={i} className="size-4 fill-yellow-500 text-yellow-500" />
       ))}
     </div>
   );
@@ -160,11 +160,11 @@ function TopNav() {
       >
         {/* Brand */}
         <a href="#main" className="group flex items-center gap-3">
-          <span className="flex size-10 items-center justify-center rounded-full bg-orange-600 text-stone-50 shadow-sm transition-transform group-hover:scale-105">
+          <span className="flex size-10 items-center justify-center rounded-full bg-blue-600 text-stone-50 shadow-sm transition-transform group-hover:scale-105">
             <Hammer className="size-5" />
           </span>
           <span className="flex flex-col leading-tight">
-            <span className="font-serif text-xl italic text-stone-900">
+            <span className="font-serif text-xl italic text-slate-900">
               Rick Rodriguez
             </span>
             <span className="text-xs font-medium uppercase tracking-wider text-stone-500">
@@ -179,7 +179,7 @@ function TopNav() {
             <li key={link.href}>
               <a
                 href={link.href}
-                className="text-sm font-medium text-stone-700 transition-colors hover:text-orange-700"
+                className="text-sm font-medium text-stone-700 transition-colors hover:text-blue-700"
               >
                 {link.label}
               </a>
@@ -191,7 +191,7 @@ function TopNav() {
         <div className="flex items-center gap-2">
           <Button
             asChild
-            className="hidden bg-orange-600 text-stone-50 hover:bg-orange-700 sm:inline-flex"
+            className="hidden bg-blue-600 text-stone-50 hover:bg-blue-700 sm:inline-flex"
           >
             <a href={BUSINESS.phoneHref}>
               <Phone className="size-4" />
@@ -205,7 +205,7 @@ function TopNav() {
               <Button
                 variant="outline"
                 size="icon"
-                className="border-stone-300 bg-white text-stone-900 md:hidden"
+                className="border-stone-300 bg-white text-slate-900 md:hidden"
                 aria-label="Open menu"
               >
                 <Menu className="size-5" />
@@ -213,7 +213,7 @@ function TopNav() {
             </SheetTrigger>
             <SheetContent side="right" className="w-80 border-stone-300 bg-stone-50">
               <SheetHeader className="pb-2">
-                <SheetTitle className="font-serif text-2xl italic text-stone-900">
+                <SheetTitle className="font-serif text-2xl italic text-slate-900">
                   Rick Rodriguez
                 </SheetTitle>
                 <p className="text-xs uppercase tracking-wider text-stone-500">
@@ -225,7 +225,7 @@ function TopNav() {
                   <SheetClose asChild key={link.href}>
                     <a
                       href={link.href}
-                      className="border-b border-stone-200 px-1 py-3 text-base font-medium text-stone-800 transition-colors hover:text-orange-700"
+                      className="border-b border-stone-200 px-1 py-3 text-base font-medium text-stone-800 transition-colors hover:text-blue-700"
                     >
                       {link.label}
                     </a>
@@ -236,7 +236,7 @@ function TopNav() {
                 <SheetClose asChild>
                   <Button
                     asChild
-                    className="w-full bg-orange-600 text-stone-50 hover:bg-orange-700"
+                    className="w-full bg-blue-600 text-stone-50 hover:bg-blue-700"
                   >
                     <a href={BUSINESS.phoneHref}>
                       <Phone className="size-4" />
@@ -272,7 +272,7 @@ function Hero() {
           className="order-2 flex flex-col justify-center gap-6 px-6 py-16 md:order-1 md:px-12 md:py-20 lg:px-16"
         >
           <motion.div variants={fadeUp}>
-            <Badge className="border-orange-200 bg-orange-100 text-orange-700 hover:bg-orange-100">
+            <Badge className="border-blue-200 bg-blue-100 text-blue-700 hover:bg-blue-100">
               <MapPin className="mr-1 size-3.5" />
               {BUSINESS.primaryCity}&apos;s neighborhood handyman
             </Badge>
@@ -280,17 +280,17 @@ function Hero() {
 
           <motion.h1
             variants={fadeUp}
-            className="text-4xl font-bold leading-[1.05] tracking-tight text-stone-900 sm:text-5xl md:text-6xl"
+            className="text-4xl font-bold leading-[1.05] tracking-tight text-slate-900 sm:text-5xl md:text-6xl"
           >
             Hi, I&apos;m Rick — your{' '}
-            <span className="text-orange-700">local handyman.</span>
+            <span className="text-blue-700">local handyman.</span>
           </motion.h1>
 
           <motion.p
             variants={fadeUp}
             className="max-w-xl text-base leading-relaxed text-stone-700 sm:text-lg"
           >
-            Plumbing, carpentry, and power washing done right, by a guy who actually
+            Power washing, carpentry, electrical, and plumbing done right, by a guy who actually
             shows up. {BUSINESS.yearsInBusiness}+ years,{' '}
             {BUSINESS.jobsCompleted.toLocaleString()}+ jobs, and a {BUSINESS.avgRating}★
             rating because I treat your home like mine.
@@ -303,7 +303,7 @@ function Hero() {
             <Button
               asChild
               size="lg"
-              className="bg-orange-600 text-stone-50 hover:bg-orange-700"
+              className="bg-blue-600 text-stone-50 hover:bg-blue-700"
             >
               <a href="#contact">
                 Tell Rick What You Need
@@ -314,7 +314,7 @@ function Hero() {
               asChild
               size="lg"
               variant="outline"
-              className="border-stone-400 bg-transparent text-stone-900 hover:bg-stone-200/60"
+              className="border-stone-400 bg-transparent text-slate-900 hover:bg-stone-200/60"
             >
               <a href="#work">
                 <Images className="size-4" />
@@ -328,21 +328,21 @@ function Hero() {
             className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-stone-600"
           >
             <span className="inline-flex items-center gap-1.5">
-              <ShieldCheck className="size-4 text-orange-700" />
+              <ShieldCheck className="size-4 text-blue-700" />
               Licensed &amp; insured
             </span>
             <span aria-hidden className="text-stone-400">
               ·
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <Clock className="size-4 text-orange-700" />
+              <Clock className="size-4 text-blue-700" />
               Same-day quotes
             </span>
             <span aria-hidden className="text-stone-400">
               ·
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <MapPin className="size-4 text-orange-700" />
+              <MapPin className="size-4 text-blue-700" />
               {BUSINESS.serviceArea.split('&')[0].trim()}
             </span>
           </motion.div>
@@ -361,7 +361,7 @@ function Hero() {
             className="absolute inset-0 size-full object-cover"
             loading="eager"
           />
-          <Badge className="absolute left-4 top-4 gap-1.5 bg-orange-600 px-3 py-1.5 text-xs text-stone-50 shadow-lg">
+          <Badge className="absolute left-4 top-4 gap-1.5 bg-blue-600 px-3 py-1.5 text-xs text-stone-50 shadow-lg">
             <Camera className="size-3.5" />
             Before / After
           </Badge>
@@ -369,7 +369,7 @@ function Hero() {
           {/* Overlapping owner card */}
           <Card className="absolute -bottom-5 left-4 max-w-[16rem] border-stone-300 bg-stone-50/95 p-4 shadow-lg backdrop-blur md:-left-6">
             <div className="flex items-center gap-3">
-              <div className="size-12 shrink-0 overflow-hidden rounded-full ring-2 ring-orange-600 ring-offset-2 ring-offset-stone-50">
+              <div className="size-12 shrink-0 overflow-hidden rounded-full ring-2 ring-blue-600 ring-offset-2 ring-offset-stone-50">
                 <img
                   src="/handyman-photos/img_004.jpg"
                   alt="Rick Rodriguez and a crew member standing in front of a finished garage shelving install"
@@ -378,7 +378,7 @@ function Hero() {
                 />
               </div>
               <div className="leading-tight">
-                <p className="font-serif text-lg italic text-stone-900">
+                <p className="font-serif text-lg italic text-slate-900">
                   Rick Rodriguez
                 </p>
                 <p className="text-xs uppercase tracking-wider text-stone-500">
@@ -417,7 +417,7 @@ function TrustBar() {
   return (
     <section
       aria-label="Trust badges"
-      className="border-y border-orange-200 bg-orange-50 py-8"
+      className="border-y border-blue-200 bg-blue-50 py-8"
     >
       <div className="mx-auto max-w-7xl px-6">
         <ul className="grid grid-cols-2 gap-6 md:grid-cols-4">
@@ -426,7 +426,7 @@ function TrustBar() {
               key={s.label}
               className="flex items-center justify-center gap-2 text-center md:justify-start"
             >
-              <s.icon className="size-5 shrink-0 text-orange-700" />
+              <s.icon className="size-5 shrink-0 text-blue-700" />
               <span className="text-sm font-semibold text-stone-800 sm:text-base">
                 {s.label}
               </span>
@@ -447,10 +447,10 @@ function Services() {
     <section id="services" className="bg-white py-20 md:py-28">
       <div className="mx-auto max-w-7xl px-6">
         <Reveal className="mx-auto max-w-2xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-widest text-orange-700">
+          <p className="text-sm font-semibold uppercase tracking-widest text-blue-700">
             What Rick does
           </p>
-          <h2 className="mt-2 text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
+          <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
             Three trades, one phone call.
           </h2>
           <p className="mt-3 text-lg text-stone-600">
@@ -477,21 +477,21 @@ function Services() {
                       className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
                       loading="lazy"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-stone-900/60 via-stone-900/0 to-transparent" />
-                    <Badge className="absolute left-3 top-3 border-orange-200 bg-stone-50/95 text-orange-700 hover:bg-stone-50/95">
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-slate-900/0 to-transparent" />
+                    <Badge className="absolute left-3 top-3 border-blue-200 bg-stone-50/95 text-blue-700 hover:bg-stone-50/95">
                       {service.label}
                     </Badge>
-                    <div className="absolute bottom-3 right-3 rounded-full bg-stone-900/85 px-3 py-1 text-xs font-medium text-stone-50">
+                    <div className="absolute bottom-3 right-3 rounded-full bg-slate-900/85 px-3 py-1 text-xs font-medium text-stone-50">
                       Starting at {service.startingAt}
                     </div>
                   </div>
 
                   <div className="flex h-full flex-col p-6">
                     <div className="mb-3 flex items-center gap-2">
-                      <span className="flex size-9 items-center justify-center rounded-full bg-orange-100 text-orange-700">
+                      <span className="flex size-9 items-center justify-center rounded-full bg-blue-100 text-blue-700">
                         <Icon className="size-5" />
                       </span>
-                      <h3 className="text-xl font-semibold text-stone-900">
+                      <h3 className="text-xl font-semibold text-slate-900">
                         {service.label}
                       </h3>
                     </div>
@@ -505,7 +505,7 @@ function Services() {
                           key={b}
                           className="flex items-start gap-2 text-sm text-stone-700"
                         >
-                          <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-orange-600" />
+                          <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-blue-600" />
                           <span>{b}</span>
                         </li>
                       ))}
@@ -513,7 +513,7 @@ function Services() {
 
                     <a
                       href="#contact"
-                      className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-orange-700 transition-colors hover:text-orange-800"
+                      className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-blue-700 transition-colors hover:text-blue-800"
                     >
                       Ask Rick about {service.label.toLowerCase()}
                       <ArrowRight className="size-4" />
@@ -552,7 +552,7 @@ function MeetRick() {
               loading="lazy"
             />
             <div className="absolute bottom-4 left-4">
-              <Badge className="border-stone-300 bg-stone-900/90 text-stone-50 hover:bg-stone-900/90">
+              <Badge className="border-stone-300 bg-slate-900/90 text-stone-50 hover:bg-slate-900/90">
                 <Hammer className="mr-1 size-3.5" />
                 Custom garage shelving crew
               </Badge>
@@ -561,10 +561,10 @@ function MeetRick() {
         </Reveal>
 
         <Reveal delay={0.1}>
-          <p className="text-sm font-semibold uppercase tracking-widest text-orange-700">
+          <p className="text-sm font-semibold uppercase tracking-widest text-blue-700">
             A few words from Rick
           </p>
-          <h2 className="mt-2 text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
+          <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
             I started R&amp;R Handyman in 2012 because I was tired of seeing
             neighbors get burned.
           </h2>
@@ -576,7 +576,7 @@ function MeetRick() {
               when you call, I answer. When I show up, I do the work myself.
             </p>
             <p>
-              Plumbing, carpentry, and power washing are the three things I do
+              Power washing, carpentry, electrical, and plumbing are the four things I do
               every week. That means I&apos;m fast, I&apos;m clean, and I know
               what your job should cost before I start.
             </p>
@@ -591,9 +591,9 @@ function MeetRick() {
             {trustItems.map((item) => (
               <li
                 key={item.label}
-                className="inline-flex items-center gap-2 rounded-full border border-orange-200 bg-orange-50 px-4 py-2 text-sm font-medium text-stone-800"
+                className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-medium text-stone-800"
               >
-                <item.icon className="size-4 text-orange-700" />
+                <item.icon className="size-4 text-blue-700" />
                 {item.label}
               </li>
             ))}
@@ -614,7 +614,7 @@ function CaseStudySpotlight() {
   return (
     <section
       aria-labelledby="spotlight-heading"
-      className="bg-stone-900 py-20 text-stone-50 md:py-28"
+      className="bg-slate-900 py-20 text-stone-50 md:py-28"
     >
       <div className="mx-auto grid max-w-7xl items-center gap-10 px-6 md:grid-cols-2 md:gap-12">
         <motion.div
@@ -630,7 +630,7 @@ function CaseStudySpotlight() {
             className="aspect-[4/3] w-full object-cover"
             loading="lazy"
           />
-          <Badge className="absolute left-4 top-4 gap-1.5 bg-orange-600 px-3 py-1.5 text-stone-50">
+          <Badge className="absolute left-4 top-4 gap-1.5 bg-blue-600 px-3 py-1.5 text-stone-50">
             <Camera className="size-3.5" />
             Before / After
           </Badge>
@@ -642,7 +642,7 @@ function CaseStudySpotlight() {
           viewport={{ once: true, margin: '-80px' }}
           variants={fadeUp}
         >
-          <p className="text-xs font-semibold uppercase tracking-widest text-orange-500">
+          <p className="text-xs font-semibold uppercase tracking-widest text-blue-500">
             Project Spotlight
           </p>
           <h3
@@ -659,8 +659,8 @@ function CaseStudySpotlight() {
             makes neighbors ask for the contractor&apos;s number.
           </p>
 
-          <blockquote className="mt-6 border-l-2 border-orange-500 pl-4">
-            <Quote className="size-5 text-orange-500" />
+          <blockquote className="mt-6 border-l-2 border-blue-500 pl-4">
+            <Quote className="size-5 text-blue-500" />
             <p className="mt-2 italic leading-relaxed text-stone-100">
               &ldquo;{t.quote}&rdquo;
             </p>
@@ -672,7 +672,7 @@ function CaseStudySpotlight() {
           <div className="mt-7">
             <Button
               asChild
-              className="bg-orange-600 text-stone-50 hover:bg-orange-700"
+              className="bg-blue-600 text-stone-50 hover:bg-blue-700"
             >
               <a href="#contact">
                 Request a deck quote
@@ -690,13 +690,14 @@ function CaseStudySpotlight() {
 /*                            Project gallery                                  */
 /* -------------------------------------------------------------------------- */
 
-type GalleryFilter = 'all' | 'plumbing' | 'carpentry' | 'power_washing';
+type GalleryFilter = 'all' | 'plumbing' | 'carpentry' | 'power_washing' | 'electrical';
 
 const GALLERY_FILTERS: { key: GalleryFilter; label: string }[] = [
   { key: 'all', label: 'All' },
   { key: 'plumbing', label: 'Plumbing' },
   { key: 'carpentry', label: 'Carpentry' },
   { key: 'power_washing', label: 'Power Washing' },
+  { key: 'electrical', label: 'Electrical' },
 ];
 
 const FILTER_BADGE_LABEL: Record<GalleryFilter, string> = {
@@ -731,10 +732,10 @@ function ProjectGallery() {
     <section id="work" className="bg-white py-20 md:py-28">
       <div className="mx-auto max-w-7xl px-6">
         <Reveal className="mx-auto max-w-2xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-widest text-orange-700">
+          <p className="text-sm font-semibold uppercase tracking-widest text-blue-700">
             Recent work
           </p>
-          <h2 className="mt-2 text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
+          <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
             Some of the jobs Rick&apos;s done lately.
           </h2>
           <p className="mt-3 text-base text-stone-600">
@@ -757,10 +758,10 @@ function ProjectGallery() {
                 role="tab"
                 aria-selected={active}
                 onClick={() => setFilter(f.key)}
-                className={`inline-flex items-center rounded-full border px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-600 focus-visible:ring-offset-2 ${
+                className={`inline-flex items-center rounded-full border px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 ${
                   active
-                    ? 'border-orange-600 bg-orange-600 text-stone-50'
-                    : 'border-stone-300 bg-white text-stone-700 hover:border-orange-300 hover:bg-orange-50'
+                    ? 'border-blue-600 bg-blue-600 text-stone-50'
+                    : 'border-stone-300 bg-white text-stone-700 hover:border-blue-300 hover:bg-blue-50'
                 }`}
               >
                 {f.label}
@@ -793,7 +794,7 @@ function ProjectGallery() {
                   variants={fadeIn}
                   type="button"
                   onClick={() => setLightboxSrc(src)}
-                  className="group relative block w-full break-inside-avoid overflow-hidden rounded-xl border border-stone-300 bg-stone-200 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-600 focus-visible:ring-offset-2"
+                  className="group relative block w-full break-inside-avoid overflow-hidden rounded-xl border border-stone-300 bg-stone-200 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
                   aria-label={`Open photo: ${caption.title}`}
                 >
                   <img
@@ -802,9 +803,9 @@ function ProjectGallery() {
                     className="block w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
                     loading="lazy"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-stone-900/85 via-stone-900/20 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/85 via-slate-900/20 to-transparent" />
                   <div className="absolute inset-x-0 bottom-0 p-4">
-                    <Badge className="mb-2 border-orange-200 bg-stone-50/95 text-orange-700 hover:bg-stone-50/95">
+                    <Badge className="mb-2 border-blue-200 bg-stone-50/95 text-blue-700 hover:bg-stone-50/95">
                       {filterLabel}
                     </Badge>
                     <p className="text-sm font-semibold text-stone-50">
@@ -832,16 +833,16 @@ function ProjectGallery() {
                 <img
                   src={lightboxSrc}
                   alt={activeCaption.title}
-                  className="max-h-[70vh] w-full bg-stone-900 object-contain"
+                  className="max-h-[70vh] w-full bg-slate-900 object-contain"
                 />
               </div>
               <DialogHeader className="px-6 pb-4 pt-4">
                 <div className="flex items-center gap-2">
-                  <Badge className="border-orange-200 bg-orange-100 text-orange-700 hover:bg-orange-100">
+                  <Badge className="border-blue-200 bg-blue-100 text-blue-700 hover:bg-blue-100">
                     {categoryLabelForSrc(lightboxSrc)}
                   </Badge>
                 </div>
-                <DialogTitle className="font-serif text-xl text-stone-900">
+                <DialogTitle className="font-serif text-xl text-slate-900">
                   {activeCaption.title}
                 </DialogTitle>
                 <DialogDescription className="text-stone-600">
@@ -884,10 +885,10 @@ function HowRickWorks() {
     <section className="bg-white py-20 md:py-28">
       <div className="mx-auto max-w-7xl px-6">
         <Reveal className="mx-auto max-w-2xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-widest text-orange-700">
+          <p className="text-sm font-semibold uppercase tracking-widest text-blue-700">
             How Rick works
           </p>
-          <h2 className="mt-2 text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
+          <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
             Three steps. No surprises.
           </h2>
         </Reveal>
@@ -902,15 +903,15 @@ function HowRickWorks() {
           {steps.map((step, i) => (
             <motion.li key={step.title} variants={fadeUp}>
               <Card className="h-full border-stone-300 bg-stone-50 p-6 text-center">
-                <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-orange-600 text-lg font-bold text-stone-50 shadow-md">
+                <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-blue-600 text-lg font-bold text-stone-50 shadow-md">
                   {i + 1}
                 </div>
                 <div className="mt-4 flex justify-center">
-                  <span className="flex size-10 items-center justify-center rounded-full bg-orange-100 text-orange-700">
+                  <span className="flex size-10 items-center justify-center rounded-full bg-blue-100 text-blue-700">
                     <step.icon className="size-5" />
                   </span>
                 </div>
-                <h3 className="mt-3 text-lg font-semibold text-stone-900">
+                <h3 className="mt-3 text-lg font-semibold text-slate-900">
                   {step.title}
                 </h3>
                 <p className="mt-2 text-sm leading-relaxed text-stone-600">
@@ -946,10 +947,10 @@ function Testimonials() {
     <section id="reviews" className="bg-white py-20 md:py-28">
       <div className="mx-auto max-w-7xl px-6">
         <Reveal className="mx-auto max-w-2xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-widest text-orange-700">
+          <p className="text-sm font-semibold uppercase tracking-widest text-blue-700">
             From the neighbors
           </p>
-          <h2 className="mt-2 text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
+          <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
             What the neighbors are saying.
           </h2>
         </Reveal>
@@ -974,16 +975,16 @@ function Testimonials() {
                   &ldquo;{t.quote}&rdquo;
                 </blockquote>
                 <div className="mt-6 flex items-center gap-3 border-t border-stone-200 pt-4">
-                  <div className="flex size-11 items-center justify-center rounded-full bg-orange-600 text-sm font-semibold text-stone-50">
+                  <div className="flex size-11 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold text-stone-50">
                     {initials(t.name)}
                   </div>
                   <div className="leading-tight">
-                    <p className="font-semibold text-stone-900">{t.name}</p>
+                    <p className="font-semibold text-slate-900">{t.name}</p>
                     <p className="text-xs text-stone-500">
                       {t.location} ·{' '}
                       <Badge
                         variant="outline"
-                        className="border-orange-200 bg-orange-50 px-1.5 py-0 text-[10px] font-medium text-orange-700"
+                        className="border-blue-200 bg-blue-50 px-1.5 py-0 text-[10px] font-medium text-blue-700"
                       >
                         {t.service}
                       </Badge>
@@ -1020,7 +1021,7 @@ function TrustBadgesBand() {
   return (
     <section
       aria-label="Why neighbors trust R&R Handyman"
-      className="border-y border-orange-200 bg-orange-50 py-10"
+      className="border-y border-blue-200 bg-blue-50 py-10"
     >
       <div className="mx-auto max-w-7xl px-6">
         <ul className="grid grid-cols-2 gap-6 md:grid-cols-4">
@@ -1029,7 +1030,7 @@ function TrustBadgesBand() {
               key={b.label}
               className="flex items-center justify-center gap-2 text-center md:justify-start"
             >
-              <b.icon className="size-5 shrink-0 text-orange-700" />
+              <b.icon className="size-5 shrink-0 text-blue-700" />
               <span className="text-sm font-semibold text-stone-800 sm:text-base">
                 {b.label}
               </span>
@@ -1049,7 +1050,7 @@ function LeadForm() {
   const [formKey, setFormKey] = useState(0);
 
   const { submit: handleSubmit, submitting } = useLeadForm({
-    design: 'trusted',
+    design: 'final',
     successTitle: 'Got it — Rick will call you back within 24 hours.',
     successDescription: `For emergencies, call ${BUSINESS.phone} directly.`,
     onAfterSubmit: () => setFormKey((k) => k + 1),
@@ -1074,10 +1075,10 @@ function LeadForm() {
     <section id="contact" className="bg-stone-100 py-20 md:py-28">
       <div className="mx-auto grid max-w-7xl items-start gap-12 px-6 md:grid-cols-2 md:gap-16">
         <Reveal>
-          <p className="text-sm font-semibold uppercase tracking-widest text-orange-700">
+          <p className="text-sm font-semibold uppercase tracking-widest text-blue-700">
             Tell Rick
           </p>
-          <h2 className="mt-2 text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
+          <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
             Tell Rick what you need.
           </h2>
           <p className="mt-4 max-w-md text-lg leading-relaxed text-stone-700">
@@ -1090,14 +1091,14 @@ function LeadForm() {
             {contactRows.map((row) => {
               const inner = (
                 <>
-                  <span className="flex size-10 items-center justify-center rounded-full bg-orange-100 text-orange-700">
+                  <span className="flex size-10 items-center justify-center rounded-full bg-blue-100 text-blue-700">
                     <row.icon className="size-5" />
                   </span>
                   <span className="flex flex-col">
                     <span className="text-xs uppercase tracking-wider text-stone-500">
                       {row.label}
                     </span>
-                    <span className="text-base font-medium text-stone-900">
+                    <span className="text-base font-medium text-slate-900">
                       {row.value}
                     </span>
                   </span>
@@ -1108,7 +1109,7 @@ function LeadForm() {
                   {row.href ? (
                     <a
                       href={row.href}
-                      className="flex items-center gap-4 rounded-lg p-1 transition-colors hover:text-orange-700"
+                      className="flex items-center gap-4 rounded-lg p-1 transition-colors hover:text-blue-700"
                     >
                       {inner}
                     </a>
@@ -1124,7 +1125,7 @@ function LeadForm() {
         <Reveal delay={0.1}>
           <Card className="border-stone-300 bg-white p-6 shadow-lg md:p-8">
             <CardHeader className="px-0 pt-0">
-              <CardTitle className="font-serif text-2xl text-stone-900">
+              <CardTitle className="font-serif text-2xl text-slate-900">
                 Send Rick a message
               </CardTitle>
               <CardDescription className="text-stone-600">
@@ -1141,22 +1142,22 @@ function LeadForm() {
               >
                 <div className="space-y-2">
                   <Label htmlFor="final-name" className="text-stone-800">
-                    Your name <span className="text-orange-700">*</span>
+                    Your name <span className="text-blue-700">*</span>
                   </Label>
                   <Input
                     id="final-name"
                     name="name"
                     required
                     autoComplete="name"
-                    placeholder="Pat Springfield"
-                    className="border-stone-300 bg-stone-50 focus-visible:border-orange-600 focus-visible:ring-orange-600/30"
+                    placeholder="Pat"
+                    className="border-stone-300 bg-stone-50 focus-visible:border-blue-600 focus-visible:ring-blue-600/30"
                   />
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="final-phone" className="text-stone-800">
-                      Phone <span className="text-orange-700">*</span>
+                      Phone <span className="text-blue-700">*</span>
                     </Label>
                     <Input
                       id="final-phone"
@@ -1165,7 +1166,7 @@ function LeadForm() {
                       required
                       autoComplete="tel"
                       placeholder="(555) 000-0000"
-                      className="border-stone-300 bg-stone-50 focus-visible:border-orange-600 focus-visible:ring-orange-600/30"
+                      className="border-stone-300 bg-stone-50 focus-visible:border-blue-600 focus-visible:ring-blue-600/30"
                     />
                   </div>
                   <div className="space-y-2">
@@ -1178,7 +1179,7 @@ function LeadForm() {
                       type="email"
                       autoComplete="email"
                       placeholder="you@example.com"
-                      className="border-stone-300 bg-stone-50 focus-visible:border-orange-600 focus-visible:ring-orange-600/30"
+                      className="border-stone-300 bg-stone-50 focus-visible:border-blue-600 focus-visible:ring-blue-600/30"
                     />
                   </div>
                 </div>
@@ -1190,14 +1191,15 @@ function LeadForm() {
                   <Select name="service" defaultValue="">
                     <SelectTrigger
                       id="final-service"
-                      className="w-full border-stone-300 bg-stone-50 focus-visible:border-orange-600 focus-visible:ring-orange-600/30"
+                      className="w-full border-stone-300 bg-stone-50 focus-visible:border-blue-600 focus-visible:ring-blue-600/30"
                     >
                       <SelectValue placeholder="Pick a trade — or ask Rick" />
                     </SelectTrigger>
                     <SelectContent className="border-stone-300 bg-white">
-                      <SelectItem value="plumbing">Plumbing</SelectItem>
-                      <SelectItem value="carpentry">Carpentry</SelectItem>
                       <SelectItem value="power-washing">Power Washing</SelectItem>
+                      <SelectItem value="carpentry">Carpentry</SelectItem>
+                      <SelectItem value="electrical">Electrical</SelectItem>
+                      <SelectItem value="plumbing">Plumbing</SelectItem>
                       <SelectItem value="not-sure">Not sure / multiple</SelectItem>
                     </SelectContent>
                   </Select>
@@ -1212,7 +1214,7 @@ function LeadForm() {
                     name="message"
                     rows={4}
                     placeholder="e.g., kitchen faucet started dripping Tuesday, looks like the shutoff is stuck too."
-                    className="resize-y border-stone-300 bg-stone-50 focus-visible:border-orange-600 focus-visible:ring-orange-600/30"
+                    className="resize-y border-stone-300 bg-stone-50 focus-visible:border-blue-600 focus-visible:ring-blue-600/30"
                   />
                 </div>
 
@@ -1220,7 +1222,7 @@ function LeadForm() {
                   type="submit"
                   size="lg"
                   disabled={submitting}
-                  className="w-full bg-orange-600 text-stone-50 hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="w-full bg-blue-600 text-stone-50 hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {submitting ? (
                     <>
@@ -1256,10 +1258,10 @@ function FAQ() {
     <section id="faq" className="bg-white py-20 md:py-28">
       <div className="mx-auto max-w-3xl px-6">
         <Reveal className="text-center">
-          <p className="text-sm font-semibold uppercase tracking-widest text-orange-700">
+          <p className="text-sm font-semibold uppercase tracking-widest text-blue-700">
             Quick answers
           </p>
-          <h2 className="mt-2 text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
+          <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
             Questions Rick hears a lot.
           </h2>
         </Reveal>
@@ -1276,7 +1278,7 @@ function FAQ() {
                 value={`faq-${i}`}
                 className="border-b border-stone-200 last:border-b-0"
               >
-                <AccordionTrigger className="text-left text-base font-semibold text-stone-900 hover:text-orange-700 hover:no-underline">
+                <AccordionTrigger className="text-left text-base font-semibold text-slate-900 hover:text-blue-700 hover:no-underline">
                   {faq.q}
                 </AccordionTrigger>
                 <AccordionContent className="text-sm leading-relaxed text-stone-700">
@@ -1303,10 +1305,10 @@ function ServiceArea() {
           <Card className="overflow-hidden border-stone-300 bg-white shadow-sm">
             <div className="grid items-center gap-8 p-6 md:grid-cols-2 md:p-10">
               <div>
-                <p className="text-sm font-semibold uppercase tracking-widest text-orange-700">
+                <p className="text-sm font-semibold uppercase tracking-widest text-blue-700">
                   Where Rick works
                 </p>
-                <h2 className="mt-2 text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
+                <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
                   Where Rick works.
                 </h2>
                 <p className="mt-4 text-base leading-relaxed text-stone-600">
@@ -1315,7 +1317,7 @@ function ServiceArea() {
                 </p>
                 <Button
                   asChild
-                  className="mt-6 bg-orange-600 text-stone-50 hover:bg-orange-700"
+                  className="mt-6 bg-blue-600 text-stone-50 hover:bg-blue-700"
                 >
                   <a href={BUSINESS.phoneHref}>
                     <Phone className="size-4" />
@@ -1330,7 +1332,7 @@ function ServiceArea() {
                     key={city}
                     className="inline-flex items-center gap-2 rounded-lg border border-stone-300 bg-stone-50 px-3 py-2 text-sm font-medium text-stone-800"
                   >
-                    <MapPin className="size-4 text-orange-700" />
+                    <MapPin className="size-4 text-blue-700" />
                     {city}
                   </li>
                 ))}
@@ -1349,7 +1351,7 @@ function ServiceArea() {
 
 function FinalCTA() {
   return (
-    <section className="bg-stone-900 py-16 text-stone-50 md:py-20">
+    <section className="bg-slate-900 py-16 text-stone-50 md:py-20">
       <div className="mx-auto max-w-4xl px-6 text-center">
         <Reveal>
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
@@ -1363,7 +1365,7 @@ function FinalCTA() {
             <Button
               asChild
               size="lg"
-              className="bg-orange-600 text-stone-50 hover:bg-orange-700"
+              className="bg-blue-600 text-stone-50 hover:bg-blue-700"
             >
               <a href={BUSINESS.phoneHref}>
                 <Phone className="size-4" />
@@ -1397,13 +1399,13 @@ function FinalCTA() {
 
 function Footer() {
   return (
-    <footer className="mt-auto bg-stone-900 text-stone-400">
+    <footer className="mt-auto bg-slate-900 text-stone-400">
       <div className="mx-auto max-w-7xl px-6 py-14">
         <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
           {/* Brand */}
           <div>
             <div className="flex items-center gap-3">
-              <span className="flex size-9 items-center justify-center rounded-full bg-orange-600 text-stone-50">
+              <span className="flex size-9 items-center justify-center rounded-full bg-blue-600 text-stone-50">
                 <Hammer className="size-4" />
               </span>
               <p className="font-serif text-lg italic text-stone-50">
@@ -1415,7 +1417,7 @@ function Footer() {
               right, by a guy who actually shows up.
             </p>
             <p className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-stone-300">
-              <ShieldCheck className="size-4 text-orange-500" />
+              <ShieldCheck className="size-4 text-blue-500" />
               Licensed &amp; Insured
             </p>
           </div>
@@ -1430,7 +1432,7 @@ function Footer() {
                 <li key={s.id}>
                   <a
                     href="#services"
-                    className="transition-colors hover:text-orange-400"
+                    className="transition-colors hover:text-blue-400"
                   >
                     {s.label}
                   </a>
@@ -1447,7 +1449,7 @@ function Footer() {
             <ul className="mt-4 space-y-2 text-sm">
               {BUSINESS.citiesServed.slice(0, 6).map((city) => (
                 <li key={city} className="flex items-center gap-1.5">
-                  <MapPin className="size-3.5 text-orange-500" />
+                  <MapPin className="size-3.5 text-blue-500" />
                   {city}
                 </li>
               ))}
@@ -1464,7 +1466,7 @@ function Footer() {
             </h3>
             <ul className="mt-4 space-y-3 text-sm">
               <li className="flex items-start gap-2">
-                <Clock className="mt-0.5 size-4 shrink-0 text-orange-500" />
+                <Clock className="mt-0.5 size-4 shrink-0 text-blue-500" />
                 <span>
                   {BUSINESS.hours.weekdays}
                   <br />
@@ -1476,18 +1478,18 @@ function Footer() {
               <li>
                 <a
                   href={BUSINESS.phoneHref}
-                  className="flex items-center gap-2 transition-colors hover:text-orange-400"
+                  className="flex items-center gap-2 transition-colors hover:text-blue-400"
                 >
-                  <Phone className="size-4 shrink-0 text-orange-500" />
+                  <Phone className="size-4 shrink-0 text-blue-500" />
                   {BUSINESS.phone}
                 </a>
               </li>
               <li>
                 <a
                   href={BUSINESS.emailHref}
-                  className="flex items-center gap-2 transition-colors hover:text-orange-400"
+                  className="flex items-center gap-2 transition-colors hover:text-blue-400"
                 >
-                  <Mail className="size-4 shrink-0 text-orange-500" />
+                  <Mail className="size-4 shrink-0 text-blue-500" />
                   {BUSINESS.email}
                 </a>
               </li>
@@ -1515,7 +1517,7 @@ export default function DesignFinal() {
     <div className="flex min-h-screen flex-col bg-stone-100">
       <a
         href="#main"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[100] focus:rounded-md focus:bg-orange-600 focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-white"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[100] focus:rounded-md focus:bg-blue-600 focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-white"
       >
         Skip to content
       </a>

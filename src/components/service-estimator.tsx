@@ -107,7 +107,7 @@ export function ServiceEstimator() {
       <DialogTrigger asChild>
         <button
           type="button"
-          className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-3 py-1.5 text-xs font-medium text-amber-800 transition-colors hover:border-amber-500 hover:bg-amber-100 sm:text-sm"
+          className="inline-flex items-center gap-1.5 rounded-full border border-yellow-300 bg-yellow-50 px-3 py-1.5 text-xs font-medium text-yellow-800 transition-colors hover:border-yellow-500 hover:bg-yellow-100 sm:text-sm"
           title="Get an instant price range for your job"
         >
           <Calculator className="h-3.5 w-3.5" aria-hidden />
@@ -119,7 +119,7 @@ export function ServiceEstimator() {
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
-            <span className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-amber-500 text-stone-950">
+            <span className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-yellow-400 text-slate-950">
               <Calculator className="h-5 w-5" aria-hidden />
             </span>
             Instant Price Estimate
@@ -170,7 +170,7 @@ export function ServiceEstimator() {
                     aria-pressed={isActive}
                     className={`rounded-md border px-3 py-2 text-left transition-colors ${
                       isActive
-                        ? 'border-amber-500 bg-amber-50 text-stone-900'
+                        ? 'border-yellow-500 bg-yellow-50 text-stone-900'
                         : 'border-stone-200 bg-white text-stone-700 hover:border-stone-400'
                     }`}
                   >
@@ -200,7 +200,7 @@ export function ServiceEstimator() {
                     aria-pressed={isActive}
                     className={`rounded-md border px-3 py-2 text-left transition-colors ${
                       isActive
-                        ? 'border-amber-500 bg-amber-50 text-stone-900'
+                        ? 'border-yellow-500 bg-yellow-50 text-stone-900'
                         : 'border-stone-200 bg-white text-stone-700 hover:border-stone-400'
                     }`}
                   >
@@ -209,7 +209,7 @@ export function ServiceEstimator() {
                       {u.blurb}
                     </div>
                     {u.surcharge > 0 && (
-                      <div className="text-[11px] mt-0.5 font-medium text-amber-700">
+                      <div className="text-[11px] mt-0.5 font-medium text-yellow-700">
                         +${u.surcharge} dispatch
                       </div>
                     )}
@@ -238,17 +238,17 @@ export function ServiceEstimator() {
           </div>
 
           {/* Result */}
-          <div className="rounded-lg border border-amber-300 bg-amber-50 p-4">
+          <div className="rounded-lg border border-yellow-300 bg-yellow-50 p-4">
             <div className="flex items-baseline justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-amber-800">
+                <p className="text-xs font-semibold uppercase tracking-wide text-yellow-800">
                   Estimated range
                 </p>
                 <p className="mt-1 text-3xl font-bold text-stone-950 tabular-nums">
                   ${low.toLocaleString()} – ${high.toLocaleString()}
                 </p>
               </div>
-              <Sparkles className="h-6 w-6 text-amber-500" aria-hidden />
+              <Sparkles className="h-6 w-6 text-yellow-500" aria-hidden />
             </div>
             <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-stone-700">
               <div className="flex justify-between">
@@ -277,7 +277,7 @@ export function ServiceEstimator() {
             <a
               href="#contact"
               onClick={() => setOpen(false)}
-              className="inline-flex flex-1 items-center justify-center gap-2 rounded-md bg-amber-500 px-4 py-2.5 text-sm font-semibold text-stone-950 transition-colors hover:bg-amber-400"
+              className="inline-flex flex-1 items-center justify-center gap-2 rounded-md bg-yellow-500 px-4 py-2.5 text-sm font-semibold text-stone-950 transition-colors hover:bg-yellow-300"
             >
               <DollarSign className="h-4 w-4" aria-hidden />
               Get my exact flat-price quote

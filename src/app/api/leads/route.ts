@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { createHash } from 'crypto';
 import { verifyAdminAuth } from '@/lib/admin-auth';
+import { notifyNewLead } from '@/lib/notify';
 
 // Simple in-memory rate limiting: max 5 lead submissions per IP per 10 min.
 // For a mockup / small-business site this is plenty.
@@ -25,7 +26,7 @@ function hashIp(ip: string): string {
   return createHash('sha256').update(`rr-handyman::${ip}`).digest('hex').slice(0, 16);
 }
 
-const VALID_DESIGNS = new Set(['modern', 'portfolio', 'trusted']);
+const VALID_DESIGNS = new Set(['modern', 'portfolio', 'trusted', 'final']);
 
 /**
  * Normalize the service value from the form's Select into the human-readable
@@ -45,6 +46,7 @@ const SERVICE_ALIASES: Record<string, string> = {
   multiple: 'Multiple / Not sure',
   'not-sure': 'Multiple / Not sure',
   other: 'Multiple / Not sure',
+  electrical: 'Electrical',
   // human-readable labels (pass through)
   Plumbing: 'Plumbing',
   Carpentry: 'Carpentry',
@@ -121,6 +123,18 @@ export async function POST(req: NextRequest) {
         estimate: true,
         createdAt: true,
       },
+    });
+
+    // Send SMS/email notification to Rick (silently skips if not configured).
+    // We don't await this — it shouldn't block the API response.
+    void notifyNewLead({
+      name,
+      phone,
+      email,
+      service,
+      message,
+      design,
+      estimate,
     });
 
     return NextResponse.json({ ok: true, lead }, { status: 201 });
