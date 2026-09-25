@@ -854,3 +854,28 @@ Stage Summary:
 - Lead form posts to /api/leads via the shared `useLeadForm({ design: 'trusted' })` hook; toast + reset on submit. Gallery filter + lightbox both functional. Mobile Sheet menu closes on link click.
 - Lint clean (0 errors, 0 warnings). Dev server responding 200 on `/`. No other files modified.
 - Caveats: (1) Footer copyright uses `CURRENT_YEAR` from `new Date().getFullYear()` so it stays correct in future years (brief said "© 2024" literally but the dynamic year is a strict improvement; easy to revert if the client prefers a fixed year). (2) The "design" field recorded in /api/leads is `'trusted'` (not a new `'final'` value) — the existing `DesignKey` type only allows `'modern' | 'portfolio' | 'trusted'` and adding `'final'` would require touching `use-lead-form.ts` + the leads API + the admin dashboard. The brief explicitly said "Use the useLeadForm hook with design: 'trusted'" so this is per-spec, and lead attribution will still correctly route to the warm-design bucket. If the client wants separate A/B tracking for this final design, the main agent can extend `DesignKey` to include `'final'` in one small follow-up edit.
+
+---
+Task ID: 15
+Agent: main
+Task: Build the final production design the client chose (mix of Design 2 + Design 3), strip the mockup tooling, make it turnkey-ready, and push to GitHub.
+
+Work Log:
+- Read worklog.md to understand the 3 designs built in rounds 0-12. The client chose a mix of Design 2 (Before/After Portfolio) and Design 3 (Trusted Local Craftsman).
+- Dispatched subagent (Task 14-a) to build `/src/components/designs/design-final.tsx` — a 1,544-line single production design combining:
+  - Design 3's warm palette (stone-100/orange-600/amber-500) + meet-the-owner narrative
+  - Design 2's before/after hero image + masonry gallery + case-study spotlight
+  - All 15 sections: sticky nav, hero (personal intro + before/after image), trust bar, services, Meet Rick story, case study spotlight, project gallery with filter + lightbox, How Rick works (3-step process), testimonials, trust badges, lead form, FAQ, service area, final CTA, footer (with "Website by Setser Solutions")
+- Rewrote `/src/app/page.tsx` (108 lines) to render just `DesignFinal` directly — removed ALL mockup-review tooling (design switcher, compare mode, keyboard shortcuts for switching, design notes drawer, help dialog, share button). Kept the good UX: scroll progress bar, back-to-top button, mobile floating CTAs (Call / Estimate / Quote), service estimator dialog.
+- Updated `/src/app/layout.tsx` OG image to point to the trusted design (`/api/og?design=trusted`).
+- The lead form uses `useLeadForm({ design: 'trusted' })` — posts to /api/leads and persists to SQLite.
+- Admin dashboard still works at `/admin/leads` (17 test leads, 11 contacted, 2 starred).
+- Lint clean. Console clean. Mobile responsive. Lead form submits + persists. Gallery filter + lightbox work. Mobile menu works.
+- Committed and pushed to GitHub: `https://github.com/Setser-Solutions/rr-handyman-mockups`
+
+Stage Summary:
+- The site is now a SINGLE, production-ready website — no mockup switcher, no "preview" framing. It's a real handyman website.
+- The final design blends the client's two favorites: warm/personal (Design 3) + photography-driven before/after showcase (Design 2).
+- All backend systems intact: lead capture → /api/leads → SQLite → admin dashboard at /admin/leads with full CRM (pagination, filters, bulk actions, star, contacted, CSV export, keyboard shortcuts, donut charts).
+- GitHub repo updated with the final design: https://github.com/Setser-Solutions/rr-handyman-mockups
+- Ready for Vercel deploy — the client can follow the Vercel walkthrough (sign in with GitHub, import the repo, set DATABASE_URL + ADMIN_PASSWORD env vars, deploy).
