@@ -565,14 +565,13 @@ function MeetRick() {
             A few words from Rick
           </p>
           <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-            I started R&amp;R Handyman in 2012 because I was tired of seeing
-            neighbors get burned.
+            Meet Rick.
           </h2>
           <div className="mt-6 space-y-4 text-base leading-relaxed text-stone-700">
             <p>
               I started R&amp;R Handyman in 2012 because I was tired of seeing
               neighbors get burned by no-show contractors and overpriced{' '}
-              &ldquo;pros.&rdquo; I&apos;m a one-truck, two-tool-belt operation —
+              &ldquo;pros.&rdquo; I&apos;m a solo operation —
               when you call, I answer. When I show up, I do the work myself.
             </p>
             <p>
@@ -630,7 +629,7 @@ function CaseStudySpotlight() {
             className="aspect-[4/3] w-full object-cover"
             loading="lazy"
           />
-          <Badge className="absolute left-4 top-4 gap-1.5 bg-blue-600 px-3 py-1.5 text-stone-50">
+          <Badge className="absolute left-4 top-4 gap-1.5 bg-yellow-400 px-3 py-1.5 text-xs text-slate-900 font-bold shadow-lg">
             <Camera className="size-3.5" />
             Before / After
           </Badge>
@@ -654,7 +653,7 @@ function CaseStudySpotlight() {
           <p className="mt-4 leading-relaxed text-stone-300">
             We lifted years of weathered gray deck boards and replaced them with
             new yellow pine, feathered into the existing framing, sanded smooth,
-            and sealed against the next ten winters. The contrast — clean bright
+            and sealed for protection. The contrast — clean bright
             wood next to sun-bleached gray — is the kind of before/after that
             makes neighbors ask for the contractor&apos;s number.
           </p>
@@ -904,7 +903,7 @@ function HowRickWorks() {
           {steps.map((step, i) => (
             <motion.li key={step.title} variants={fadeUp}>
               <Card className="h-full border-stone-300 bg-stone-50 p-6 text-center">
-                <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-blue-600 text-lg font-bold text-stone-50 shadow-md">
+                <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-yellow-400 text-lg font-bold text-slate-900 shadow-md">
                   {i + 1}
                 </div>
                 <div className="mt-4 flex justify-center">
@@ -1084,7 +1083,7 @@ function LeadForm() {
           </h2>
           <p className="mt-4 max-w-md text-lg leading-relaxed text-stone-700">
             Drop your info below and Rick will call you back within 24 hours —
-            usually sooner. For after-hours emergencies, just call the shop line
+            usually sooner. For after-hours emergencies, just call Rick directly
             directly.
           </p>
 
@@ -1359,7 +1358,7 @@ function FinalCTA() {
             Ready to get this off your to-do list?
           </h2>
           <p className="mt-4 text-lg text-stone-300">
-            Call or text Rick directly — 7 days a week. Same-day quotes on most
+            Call or text Rick directly — 6 days a week. Same-day quotes on most
             jobs.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
@@ -1386,7 +1385,7 @@ function FinalCTA() {
             </Button>
           </div>
           <p className="mt-6 text-sm text-stone-400">
-            Text or call, 7 days a week · Emergency plumbing welcome
+            Text or call, Mon–Sat · Emergency calls welcome
           </p>
         </Reveal>
       </div>
