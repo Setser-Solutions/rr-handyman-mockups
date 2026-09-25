@@ -72,7 +72,7 @@ export default function Home() {
         type="button"
         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
         aria-label="Scroll back to top"
-        className={`fixed ${backToTopBottomClass} right-4 sm:right-6 z-50 inline-flex h-11 w-11 items-center justify-center rounded-full bg-slate-900 text-white shadow-lg ring-1 ring-black/10 transition-all hover:bg-slate-800 hover:scale-105 ${
+        className={`fixed ${backToTopBottomClass} right-4 sm:right-6 z-50 inline-flex h-11 w-11 items-center justify-center rounded-full bg-slate-900 text-white shadow-lg ring-1 ring-black/10 transition-all hover:bg-slate-800 hover:scale-105 hover:ring-2 hover:ring-yellow-400 hover:ring-offset-2 ${
           scrolled ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none'
         }`}
       >
@@ -97,7 +97,7 @@ export default function Home() {
         </div>
         <a
           href="#contact"
-          className="inline-flex items-center justify-center gap-2 bg-blue-600 py-3.5 text-sm font-semibold text-white hover:bg-blue-700"
+          className="inline-flex items-center justify-center gap-2 bg-blue-600 py-3.5 text-sm font-semibold text-white hover:bg-blue-700 hover:ring-2 hover:ring-yellow-400"
         >
           <Send className="h-4 w-4" aria-hidden />
           Quote

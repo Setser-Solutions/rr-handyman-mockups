@@ -772,7 +772,7 @@ function ProjectGallery() {
                 onClick={() => setFilter(f.key)}
                 className={`inline-flex items-center rounded-full border px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 ${
                   active
-                    ? 'border-blue-600 bg-blue-600 text-stone-50'
+                    ? 'border-blue-600 bg-blue-600 text-stone-50 ring-1 ring-yellow-400'
                     : 'border-stone-300 bg-white text-stone-700 hover:border-blue-300 hover:bg-blue-50'
                 }`}
               >
@@ -1154,7 +1154,7 @@ function LeadForm() {
               >
                 <div className="space-y-2">
                   <Label htmlFor="final-name" className="text-stone-800">
-                    Your name <span className="text-blue-700">*</span>
+                    Your name <span className="text-yellow-600">*</span>
                   </Label>
                   <Input
                     id="final-name"
@@ -1169,7 +1169,7 @@ function LeadForm() {
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="final-phone" className="text-stone-800">
-                      Phone <span className="text-blue-700">*</span>
+                      Phone <span className="text-yellow-600">*</span>
                     </Label>
                     <Input
                       id="final-phone"
@@ -1342,7 +1342,7 @@ function ServiceArea() {
                 {BUSINESS.citiesServed.map((city) => (
                   <li
                     key={city}
-                    className="inline-flex items-center gap-2 rounded-lg border border-stone-300 bg-stone-50 px-3 py-2 text-sm font-medium text-stone-800"
+                    className="inline-flex items-center gap-2 rounded-lg border border-stone-300 border-l-2 border-l-yellow-500 bg-stone-50 px-3 py-2 text-sm font-medium text-stone-800"
                   >
                     <MapPin className="size-4 text-blue-700" />
                     {city}
@@ -1388,7 +1388,7 @@ function FinalCTA() {
               asChild
               size="lg"
               variant="outline"
-              className="border-stone-600 bg-transparent text-stone-50 hover:bg-stone-800"
+              className="border-stone-600 bg-transparent text-stone-50 hover:bg-stone-800 hover:ring-2 hover:ring-yellow-400 hover:ring-offset-2 hover:ring-offset-slate-900"
             >
               <a href="#contact">
                 <Mail className="size-4" />
@@ -1420,7 +1420,7 @@ function Footer() {
               <span className="flex size-9 items-center justify-center rounded-full bg-yellow-400 text-slate-900">
                 <Hammer className="size-4" />
               </span>
-              <p className="font-serif text-lg italic text-stone-50">
+              <p className="font-serif text-lg italic text-yellow-400">
                 Rick Rodriguez
               </p>
             </div>
