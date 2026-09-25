@@ -1,180 +1,87 @@
-# R&R Handyman Services — Website Mockups
+# R&R Handyman Services — Downriver Michigan
 
-A Next.js 16 website for **R&R Handyman Services** (Rick Rodriguez), a handyman business offering **plumbing, carpentry, and power washing**. This project features **3 unique, switchable design mockups** built from the client's real project photos, with a full lead-capture system and an admin CRM dashboard.
+A production-ready Next.js 16 website for **R&R Handyman Services** (Rick Rodriguez), serving **Downriver Michigan** with **power washing, carpentry, electrical, and plumbing** services.
 
 ## What's included
 
-### 3 unique website designs (switchable on the homepage)
+### Single production website
+A warm, professional design that blends a personal "meet the owner" narrative with a photography-driven before/after project showcase. Built from Rick's real project photos.
 
-1. **Modern Professional** — bold dark hero with amber accents, contractor-grade energy
-2. **Before/After Portfolio** — light, photography-driven with a split before/after hero
-3. **Trusted Local Craftsman** — warm, story-driven, meet-the-owner vibe
-
-Each design includes:
-- Sticky navigation with mobile menu
-- Hero section with real project photos
-- Three services section (Plumbing, Carpentry, Power Washing) with starting prices
-- Filterable project gallery with lightbox
-- Lead capture form (persists to database)
-- Testimonials
-- FAQ accordion
-- SEO-optimized semantic HTML + JSON-LD structured data
+**Color palette:** Blue + Yellow + Grey
 
 ### Lead capture + admin CRM
-
-- **Lead form** on every design → submissions persist to a SQLite database
-- **Admin dashboard** at `/admin/leads` (password-protected):
-  - Lead list with pagination, search, design/service/starred filters, date-range filter
+- **Lead form** on the homepage → submissions persist to a SQLite database
+- **SMS/email notifications** to Rick's phone when a new lead arrives
+- **Admin dashboard** at `/admin/leads` (password: `RR-admin-2026`):
+  - Lead list with pagination, search, filters, date-range, star/important flag
   - Lead detail dialog with admin notes + print view
   - Bulk actions (select all, mark contacted, delete, export selected)
-  - Star/important flag per lead
-  - Stats: total leads, leads by design, by service (donut charts), conversion rate, 7-day/30-day leads-over-time chart
-  - Real-time new-lead notification toast (auto-refresh every 30s)
-  - CSV export (all leads or selected only)
-  - Keyboard shortcuts (J/K navigate, Enter open, Space select, ? for help)
+  - Stats: by service (donut), by design (donut), conversion rate, 7d/30d chart
+  - CSV export (all or selected)
+  - Keyboard shortcuts (J/K/Enter/Space/?)
 
-### Service cost estimator
-
-An interactive "Estimate Cost" dialog on the homepage banner that gives a ballpark price range based on trade (Plumbing/Carpentry/Power Washing), scope (Small/Medium/Large), and urgency (Standard/Same-day). The estimate is attached to the lead when submitted.
-
-### SEO features
-
-- Per-design OpenGraph images (dynamically generated at `/api/og?design=modern|portfolio|trusted`)
-- JSON-LD structured data (LocalBusiness + FAQPage + BreadcrumbList)
-- `sitemap.xml` + `robots.txt` (dynamic)
-- Semantic HTML5, proper heading hierarchy, alt text on all photos
-- 12+ service keywords + city-tail keywords
-
-## Tech stack
-
-- **Framework**: Next.js 16 (App Router) + TypeScript 5
-- **Styling**: Tailwind CSS 4 + shadcn/ui (New York)
-- **Database**: Prisma ORM + SQLite
-- **Icons**: lucide-react
-- **Animations**: framer-motion
-- **State**: Zustand (estimate store) + React hooks
-- **Toasts**: sonner
+### 4 Services
+1. **Power Washing** — driveways, patios, decks, siding
+2. **Carpentry** — decks, porches, cabinets, trim, drywall, framing
+3. **Electrical** — outlets, switches, fixtures, ceiling fans, panels
+4. **Plumbing** — faucets, sinks, disposals, toilets, drains
 
 ## Getting started
 
 ### Prerequisites
-
 - Node.js 18+ (or [Bun](https://bun.sh))
-- A code editor (VS Code recommended)
 
 ### Installation
-
 ```bash
-# Clone the repo
-git clone <your-repo-url>
-cd rr-handyman
-
-# Install dependencies
+git clone https://github.com/Setser-Solutions/rr-handyman-mockups.git
+cd rr-handyman-mockups
 bun install
-# or: npm install
-
-# Copy the env file
 cp .env.example .env
-
-# Push the database schema
 bun run db:push
-# or: npx prisma db push --accept-data-loss
-
-# Start the dev server
 bun run dev
-# or: npm run dev
 ```
 
-Visit **http://localhost:3000** to see the site.
+Visit **http://localhost:3000**.
 
 ### Admin dashboard
+Visit **http://localhost:3000/admin/login** → password: `RR-admin-2026`
 
-Visit **http://localhost:3000/admin/login** and enter the password:
-
+### Lead notifications (SMS + email)
+Set these env vars in `.env`:
 ```
-rr-admin-2024
-```
-
-> **Important**: Change this password before going live! Set the `ADMIN_PASSWORD` environment variable in your `.env` file.
-
-## Project structure
-
-```
-src/
-├── app/
-│   ├── page.tsx              # Homepage with design switcher
-│   ├── layout.tsx            # Root layout + SEO metadata + JSON-LD
-│   ├── admin/
-│   │   ├── login/            # Admin login page
-│   │   └── leads/            # Admin CRM dashboard
-│   ├── api/
-│   │   ├── leads/            # Lead CRUD API (POST/GET/PATCH/DELETE)
-│   │   ├── feedback/         # Design feedback API
-│   │   ├── admin/auth/       # Admin login/logout/status
-│   │   └── og/               # Dynamic OG image generation
-│   ├── sitemap.ts            # Dynamic sitemap
-│   └── robots.ts             # Dynamic robots.txt
-├── components/
-│   ├── designs/              # The 3 website designs
-│   │   ├── design-modern.tsx
-│   │   ├── design-portfolio.tsx
-│   │   └── design-trusted.tsx
-│   ├── service-estimator.tsx # Interactive price calculator
-│   ├── design-notes.tsx      # Client feedback drawer
-│   └── share-button.tsx      # Share/deep-link button
-├── lib/
-│   ├── business-info.ts      # ← Edit this to customize brand/phone/services
-│   ├── handyman-photos.ts    # Photo data (categorized by trade)
-│   ├── admin-auth.ts         # Admin cookie auth
-│   ├── estimate-store.ts     # Zustand store for estimator
-│   └── db.ts                 # Prisma client
-├── hooks/
-│   └── use-lead-form.ts      # Shared lead-form submission hook
-└── public/
-    └── handyman-photos/      # 46 real project photos from iCloud album
+SMTP_HOST=mail.yourdomain.com
+SMTP_PORT=465
+SMTP_USER=noreply@yourdomain.com
+SMTP_PASS=your-email-password
+NOTIFICATION_EMAIL=rick@rrhandyman.com
+NOTIFICATION_SMS_GATEWAY=vtext.com
 ```
 
-## Customizing for production
+The SMS gateway depends on Rick's carrier:
+- Verizon: `vtext.com`
+- AT&T: `txt.att.net`
+- T-Mobile: `tmomail.net`
+- Sprint: `messaging.sprintpcs.com`
+- Metro PCS: `metropcs.com`
 
-Before going live, edit `src/lib/business-info.ts`:
+## Customizing
 
-```typescript
-export const BUSINESS = {
-  brand: "R&R Handyman Services",
-  owner: "Rick Rodriguez",
-  phone: "(555) 014-2837",          // ← Replace with real phone
-  email: "rick@rrhandyman.example",  // ← Replace with real email
-  serviceArea: "Springfield County & surrounding towns",
-  primaryCity: "Springfield",        // ← Replace with real city
-  citiesServed: ["Springfield", "Riverton", ...],  // ← Real cities
-  ...
-};
-```
+Edit `src/lib/business-info.ts` to change:
+- Phone, email, service area
+- Services (labels, blurbs, bullets, starting prices)
+- Testimonials, FAQs, SEO keywords
 
-Also set `ADMIN_PASSWORD` in your `.env` file to a secure password.
+## Hosting on Namecheap
+1. Build the site: `bun run build`
+2. Deploy the `.next/standalone` folder to your Namecheap server
+3. Set the env vars (DATABASE_URL, ADMIN_PASSWORD, SMTP_*, NOTIFICATION_*)
+4. Run with `node .next/standalone/server.js`
 
-## Keyboard shortcuts (homepage)
-
-| Key | Action |
-|-----|--------|
-| `1` | Switch to Modern Professional design |
-| `2` | Switch to Before/After Portfolio design |
-| `3` | Switch to Trusted Local Craftsman design |
-| `C` | Toggle compare mode (all 3 stacked) |
-| `B` | Collapse/expand the switcher banner |
-| `?` | Show keyboard shortcuts help |
-
-## Keyboard shortcuts (admin dashboard)
-
-| Key | Action |
-|-----|--------|
-| `J` / `↓` | Focus next lead row |
-| `K` / `↑` | Focus previous lead row |
-| `Enter` | Open focused lead's detail |
-| `Space` | Toggle selection of focused lead |
-| `Esc` | Clear selection |
-| `?` | Show keyboard shortcuts help |
+## Tech stack
+- Next.js 16 + TypeScript 5 + Tailwind CSS 4 + shadcn/ui
+- Prisma ORM + SQLite
+- nodemailer (SMS/email notifications)
+- lucide-react + framer-motion
 
 ## License
-
-This project is a custom mockup for R&R Handyman Services. All photos are from the client's personal iCloud album and are not licensed for reuse.
+Custom mockup for R&R Handyman Services. Photos from the client's personal iCloud album.
