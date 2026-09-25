@@ -99,6 +99,7 @@ function buildJsonLd() {
     "@type": "HomeAndConstructionBusiness",
     "@id": `${siteUrl}/#business`,
     name: BUSINESS.brand,
+    legalName: BUSINESS.legalName,
     image: `${siteUrl}/handyman-photos/img_013.jpg`,
     logo: "/favicon.ico",
     url: siteUrl,

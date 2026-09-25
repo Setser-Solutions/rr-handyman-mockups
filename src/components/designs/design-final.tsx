@@ -361,10 +361,14 @@ function Hero() {
             className="absolute inset-0 size-full object-cover"
             loading="eager"
           />
-          <Badge className="absolute left-4 top-4 gap-1.5 bg-yellow-400 px-3 py-1.5 text-xs text-slate-900 font-bold shadow-lg">
+          <a
+            href="#spotlight"
+            aria-label="See the before and after project spotlight"
+            className="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-yellow-400 px-3 py-1.5 text-xs font-bold text-slate-900 shadow-lg transition-transform hover:scale-105"
+          >
             <Camera className="size-3.5" />
             Before / After
-          </Badge>
+          </a>
 
           {/* Overlapping owner card */}
           <Card className="absolute -bottom-5 left-4 max-w-[16rem] border-stone-300 bg-stone-50/95 p-4 shadow-lg backdrop-blur md:-left-6">
@@ -612,6 +616,7 @@ function CaseStudySpotlight() {
 
   return (
     <section
+      id="spotlight"
       aria-labelledby="spotlight-heading"
       className="bg-slate-900 py-20 text-stone-50 md:py-28"
     >
@@ -1498,9 +1503,14 @@ function Footer() {
         </div>
 
         <div className="mt-10 flex flex-col items-center justify-between gap-2 border-t border-stone-800 pt-6 text-xs text-stone-500 sm:flex-row">
-          <p>
-            © {CURRENT_YEAR} {BUSINESS.brand}. All rights reserved.
-          </p>
+          <div className="flex flex-col items-center gap-1 sm:items-start">
+            <p>
+              © {CURRENT_YEAR} {BUSINESS.brand}. All rights reserved.
+            </p>
+            <p className="text-[10px] text-stone-600">
+              {BUSINESS.legalName}
+            </p>
+          </div>
           <p>
             Website by{' '}
             <a

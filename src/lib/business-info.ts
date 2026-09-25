@@ -5,6 +5,7 @@
 export const BUSINESS = {
   brand: "R&R Handyman Services",
   shortBrand: "R&R Handyman",
+  legalName: "Rick's Help Around the House LLC",
   owner: "Rick Rodriguez",
   phone: "(734) 552-5888",
   phoneHref: "tel:+17345525888",
