@@ -1102,7 +1102,7 @@ export default function DesignModern() {
               © {new Date().getFullYear()} {BUSINESS.brand}. All rights
               reserved.
             </p>
-            <p>Website mockup — sample design</p>
+            <p></p>
           </div>
         </div>
       </footer>

@@ -1158,7 +1158,7 @@ export default function DesignPortfolio() {
             <p>
               © {CURRENT_YEAR} {BUSINESS.brand}. All rights reserved.
             </p>
-            <p>Website mockup — sample design.</p>
+            <p></p>
           </div>
         </div>
       </footer>

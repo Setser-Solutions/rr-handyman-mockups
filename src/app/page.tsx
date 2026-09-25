@@ -6,7 +6,7 @@ import { BUSINESS } from '@/lib/business-info';
 import { ServiceEstimator } from '@/components/service-estimator';
 
 // The single, final production design chosen by the client — a warm blend of
-// the "Before/After Portfolio" and "Trusted Local Craftsman" mockups.
+// the final design.
 import DesignFinal from '@/components/designs/design-final';
 
 export default function Home() {

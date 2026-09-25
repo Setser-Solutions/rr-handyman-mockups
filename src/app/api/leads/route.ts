@@ -5,7 +5,7 @@ import { verifyAdminAuth } from '@/lib/admin-auth';
 import { notifyNewLead } from '@/lib/notify';
 
 // Simple in-memory rate limiting: max 5 lead submissions per IP per 10 min.
-// For a mockup / small-business site this is plenty.
+// For a small-business site this is plenty.
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 const RATE_LIMIT_MAX = 5;
 const hits = new Map<string, number[]>();
@@ -60,7 +60,7 @@ function normalizeService(raw: string): string | null {
   return SERVICE_ALIASES[trimmed] ?? trimmed;
 }
 
-// POST /api/leads — submit a new lead from any mockup design's contact form.
+// POST /api/leads — submit a new lead's contact form.
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json().catch(() => null);

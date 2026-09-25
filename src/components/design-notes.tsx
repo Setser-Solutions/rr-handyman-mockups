@@ -248,7 +248,7 @@ export function DesignNotes({ activeDesign }: DesignNotesProps) {
             {entries.length === 0 && !loading ? (
               <div className="rounded-lg border border-dashed border-stone-300 bg-stone-50 p-6 text-center text-sm text-stone-500">
                 <MessageSquare className="mx-auto mb-2 h-6 w-6 text-stone-300" />
-                No notes yet. Be the first to leave feedback on these mockups.
+                No notes yet.
               </div>
             ) : (
               <ul className="space-y-3">
@@ -296,7 +296,7 @@ export function DesignNotes({ activeDesign }: DesignNotesProps) {
         </div>
 
         <div className="border-t border-stone-200 bg-stone-50 p-4 text-[11px] text-stone-500">
-          Notes are stored locally for {BUSINESS.brand} mockup review only and
+          Notes are stored locally and
           aren&apos;t visible to end users.
         </div>
       </SheetContent>

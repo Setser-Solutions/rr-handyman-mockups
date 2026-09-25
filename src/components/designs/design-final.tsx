@@ -272,7 +272,7 @@ function Hero() {
           className="order-2 flex flex-col justify-center gap-6 px-6 py-16 md:order-1 md:px-12 md:py-20 lg:px-16"
         >
           <motion.div variants={fadeUp}>
-            <Badge className="border-blue-200 bg-blue-100 text-blue-700 hover:bg-blue-100">
+            <Badge className="border-yellow-300 bg-yellow-50 text-yellow-800 hover:bg-yellow-50">
               <MapPin className="mr-1 size-3.5" />
               {BUSINESS.primaryCity}&apos;s neighborhood handyman
             </Badge>
@@ -361,7 +361,7 @@ function Hero() {
             className="absolute inset-0 size-full object-cover"
             loading="eager"
           />
-          <Badge className="absolute left-4 top-4 gap-1.5 bg-blue-600 px-3 py-1.5 text-xs text-stone-50 shadow-lg">
+          <Badge className="absolute left-4 top-4 gap-1.5 bg-yellow-400 px-3 py-1.5 text-xs text-slate-900 font-bold shadow-lg">
             <Camera className="size-3.5" />
             Before / After
           </Badge>
@@ -447,11 +447,11 @@ function Services() {
     <section id="services" className="bg-white py-20 md:py-28">
       <div className="mx-auto max-w-7xl px-6">
         <Reveal className="mx-auto max-w-2xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-widest text-blue-700">
+          <p className="text-sm font-semibold uppercase tracking-widest text-yellow-600">
             What Rick does
           </p>
           <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-            Three trades, one phone call.
+            Four trades, one phone call.
           </h2>
           <p className="mt-3 text-lg text-stone-600">
             No sub-contractors, no runaround. You call Rick, Rick does the work.
@@ -463,7 +463,7 @@ function Services() {
           initial="hidden"
           whileInView="show"
           viewport={{ once: true, margin: '-60px' }}
-          className="mt-12 grid gap-6 md:grid-cols-3"
+          className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4"
         >
           {BUSINESS.services.map((service) => {
             const Icon = ICON_MAP[service.icon] ?? Hammer;
@@ -481,7 +481,7 @@ function Services() {
                     <Badge className="absolute left-3 top-3 border-blue-200 bg-stone-50/95 text-blue-700 hover:bg-stone-50/95">
                       {service.label}
                     </Badge>
-                    <div className="absolute bottom-3 right-3 rounded-full bg-slate-900/85 px-3 py-1 text-xs font-medium text-stone-50">
+                    <div className="absolute bottom-3 right-3 rounded-full bg-yellow-400 px-3 py-1 text-xs font-bold text-slate-900">
                       Starting at {service.startingAt}
                     </div>
                   </div>
@@ -561,7 +561,7 @@ function MeetRick() {
         </Reveal>
 
         <Reveal delay={0.1}>
-          <p className="text-sm font-semibold uppercase tracking-widest text-blue-700">
+          <p className="text-sm font-semibold uppercase tracking-widest text-yellow-600">
             A few words from Rick
           </p>
           <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
@@ -642,7 +642,7 @@ function CaseStudySpotlight() {
           viewport={{ once: true, margin: '-80px' }}
           variants={fadeUp}
         >
-          <p className="text-xs font-semibold uppercase tracking-widest text-blue-500">
+          <p className="text-xs font-semibold uppercase tracking-widest text-yellow-600">
             Project Spotlight
           </p>
           <h3
@@ -705,6 +705,7 @@ const FILTER_BADGE_LABEL: Record<GalleryFilter, string> = {
   plumbing: 'Plumbing',
   carpentry: 'Carpentry',
   power_washing: 'Power Washing',
+  electrical: 'Electrical',
 };
 
 function categoryLabelForSrc(src: string): string {
@@ -732,7 +733,7 @@ function ProjectGallery() {
     <section id="work" className="bg-white py-20 md:py-28">
       <div className="mx-auto max-w-7xl px-6">
         <Reveal className="mx-auto max-w-2xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-widest text-blue-700">
+          <p className="text-sm font-semibold uppercase tracking-widest text-yellow-600">
             Recent work
           </p>
           <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
@@ -838,7 +839,7 @@ function ProjectGallery() {
               </div>
               <DialogHeader className="px-6 pb-4 pt-4">
                 <div className="flex items-center gap-2">
-                  <Badge className="border-blue-200 bg-blue-100 text-blue-700 hover:bg-blue-100">
+                  <Badge className="border-yellow-300 bg-yellow-50 text-yellow-800 hover:bg-yellow-50">
                     {categoryLabelForSrc(lightboxSrc)}
                   </Badge>
                 </div>
@@ -885,7 +886,7 @@ function HowRickWorks() {
     <section className="bg-white py-20 md:py-28">
       <div className="mx-auto max-w-7xl px-6">
         <Reveal className="mx-auto max-w-2xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-widest text-blue-700">
+          <p className="text-sm font-semibold uppercase tracking-widest text-yellow-600">
             How Rick works
           </p>
           <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
@@ -947,7 +948,7 @@ function Testimonials() {
     <section id="reviews" className="bg-white py-20 md:py-28">
       <div className="mx-auto max-w-7xl px-6">
         <Reveal className="mx-auto max-w-2xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-widest text-blue-700">
+          <p className="text-sm font-semibold uppercase tracking-widest text-yellow-600">
             From the neighbors
           </p>
           <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
@@ -1075,7 +1076,7 @@ function LeadForm() {
     <section id="contact" className="bg-stone-100 py-20 md:py-28">
       <div className="mx-auto grid max-w-7xl items-start gap-12 px-6 md:grid-cols-2 md:gap-16">
         <Reveal>
-          <p className="text-sm font-semibold uppercase tracking-widest text-blue-700">
+          <p className="text-sm font-semibold uppercase tracking-widest text-yellow-600">
             Tell Rick
           </p>
           <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
@@ -1258,7 +1259,7 @@ function FAQ() {
     <section id="faq" className="bg-white py-20 md:py-28">
       <div className="mx-auto max-w-3xl px-6">
         <Reveal className="text-center">
-          <p className="text-sm font-semibold uppercase tracking-widest text-blue-700">
+          <p className="text-sm font-semibold uppercase tracking-widest text-yellow-600">
             Quick answers
           </p>
           <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
@@ -1305,7 +1306,7 @@ function ServiceArea() {
           <Card className="overflow-hidden border-stone-300 bg-white shadow-sm">
             <div className="grid items-center gap-8 p-6 md:grid-cols-2 md:p-10">
               <div>
-                <p className="text-sm font-semibold uppercase tracking-widest text-blue-700">
+                <p className="text-sm font-semibold uppercase tracking-widest text-yellow-600">
                   Where Rick works
                 </p>
                 <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">

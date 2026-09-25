@@ -8,6 +8,7 @@ export type PhotoCategory =
   | "plumbing"
   | "carpentry"
   | "power_washing"
+  | "electrical"
   | "finished_work"
   | "before_after"
   | "other";
@@ -122,6 +123,7 @@ export const GALLERY_BY_CATEGORY: Record<PhotoCategory | "all", string[]> = {
   plumbing: photosByCategory("plumbing").map((p) => p.src),
   carpentry: photosByCategory("carpentry").map((p) => p.src),
   power_washing: photosByCategory("power_washing").map((p) => p.src),
+  electrical: photosByCategory("electrical").map((p) => p.src),
   finished_work: photosByCategory("finished_work").map((p) => p.src),
   before_after: photosByCategory("before_after").map((p) => p.src),
   other: photosByCategory("other").map((p) => p.src),

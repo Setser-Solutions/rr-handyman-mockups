@@ -35,7 +35,7 @@ export function ShareButton({ design }: ShareButtonProps) {
   async function handleShare() {
     const shareData = {
       title: 'R&R Handyman — Website Mockups',
-      text: `Check out the ${design === 'compare' ? 'all 3 designs' : design} mockup for the handyman site`,
+      text: `Check out the handyman site`,
       url,
     };
     if (CAN_SHARE) {

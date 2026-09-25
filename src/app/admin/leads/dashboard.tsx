@@ -103,8 +103,8 @@ const DESIGN_META: Record<DesignKey, { label: string; dot: string; badge: string
   },
   portfolio: {
     label: 'Portfolio',
-    dot: 'bg-emerald-500',
-    badge: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+    dot: 'bg-stone-500',
+    badge: 'border-stone-300 bg-stone-50 text-stone-700',
   },
   trusted: {
     label: 'Trusted',
@@ -203,10 +203,10 @@ function truncate(text: string, max = 60): string {
 
 const SERVICE_COLORS: Record<string, string> = {
   Plumbing: '#3b82f6',      // blue-500
-  Carpentry: '#eab308',     // emerald-600
+  Carpentry: '#eab308',     // grey-600
   'Power Washing': '#64748b', // slate-500
   'Multiple / Not sure': '#78716b',
-  Electrical: '#3b82f6', // stone-500
+  Electrical: '#3b82f6', // blue-500
 };
 const SERVICE_COLOR_FALLBACK = '#d6d3d1'; // stone-300
 
@@ -337,7 +337,7 @@ function ServiceDonut({
 // Same visual approach as ServiceDonut but for the 3 design variants.
 const DESIGN_COLORS: Record<DesignKey, string> = {
   modern: '#3b82f6',    // blue-500
-  portfolio: '#eab308', // emerald-500
+  portfolio: '#eab308', // grey-500
   trusted: '#64748b',   // slate-500
 };
 
@@ -1314,14 +1314,14 @@ export default function AdminLeadsDashboard() {
                         of {stats.totalLeads}
                       </span>
                     </div>
-                    <div className="flex items-center gap-1.5 rounded-full bg-emerald-50 px-2 py-0.5">
+                    <div className="flex items-center gap-1.5 rounded-full bg-stone-100 px-2 py-0.5">
                       <CheckCircle2
                         className={cn(
                           'size-3',
-                          stats.contactedCount > 0 ? 'text-emerald-600' : 'text-stone-300',
+                          stats.contactedCount > 0 ? 'text-stone-600' : 'text-stone-300',
                         )}
                       />
-                      <span className="text-xs font-semibold text-emerald-700">
+                      <span className="text-xs font-semibold text-stone-700">
                         {stats.conversionRate}% converted
                       </span>
                     </div>
@@ -1621,7 +1621,7 @@ export default function AdminLeadsDashboard() {
                         <button
                           type="button"
                           onClick={() => { setBulkAction('contacted'); setBulkConfirmOpen(true); }}
-                          className="inline-flex items-center gap-1.5 rounded-md border border-emerald-200 bg-white px-3 py-1.5 text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-50"
+                          className="inline-flex items-center gap-1.5 rounded-md border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 transition-colors hover:bg-stone-100"
                         >
                           <CheckCircle2 className="size-3.5" />
                           Mark all contacted
@@ -1788,7 +1788,7 @@ export default function AdminLeadsDashboard() {
                                     {lead.name}
                                     {lead.contacted && (
                                       <CheckCircle2
-                                        className="size-3.5 text-emerald-500"
+                                        className="size-3.5 text-stone-500"
                                         aria-label="Contacted"
                                       />
                                     )}
@@ -1886,7 +1886,7 @@ export default function AdminLeadsDashboard() {
                                       className={cn(
                                         'rounded p-1.5 transition-colors',
                                         lead.contacted
-                                          ? 'text-emerald-600 hover:bg-emerald-50'
+                                          ? 'text-stone-600 hover:bg-stone-100'
                                           : 'text-stone-400 hover:bg-stone-100 hover:text-stone-700',
                                       )}
                                     >
@@ -2036,7 +2036,7 @@ export default function AdminLeadsDashboard() {
                   <EmptyState
                     icon={MessageSquare}
                     title="No feedback yet"
-                    body="Use the “Design Notes” button on the public site to leave a rating and notes for each mockup. Submissions appear here in real time."
+                    body="Client feedback submitted via the website appears here in real time."
                   />
                 </CardContent>
               </Card>
@@ -2129,7 +2129,7 @@ export default function AdminLeadsDashboard() {
                   )}
                   <span className="truncate">{detailLead.name}</span>
                   {detailLead.contacted ? (
-                    <Badge className="bg-emerald-100 text-emerald-700">
+                    <Badge className="bg-stone-200 text-stone-700">
                       <CheckCircle2 className="mr-1 size-3" />
                       Contacted
                     </Badge>
@@ -2252,7 +2252,7 @@ export default function AdminLeadsDashboard() {
                   variant="outline"
                   size="sm"
                   onClick={() => void toggleContacted(detailLead.id, !detailLead.contacted)}
-                  className={detailLead.contacted ? 'text-stone-600' : 'text-emerald-700 hover:bg-emerald-50'}
+                  className={detailLead.contacted ? 'text-stone-600' : 'text-stone-700 hover:bg-stone-100'}
                 >
                   <CheckCircle2 className="size-4" />
                   {detailLead.contacted ? 'Mark uncontacted' : 'Mark contacted'}
@@ -2308,7 +2308,7 @@ export default function AdminLeadsDashboard() {
               {bulkAction === 'delete' ? (
                 <Trash2 className="size-5 text-red-500" />
               ) : bulkAction === 'contacted' ? (
-                <CheckCircle2 className="size-5 text-emerald-600" />
+                <CheckCircle2 className="size-5 text-stone-600" />
               ) : (
                 <X className="size-5 text-stone-500" />
               )}

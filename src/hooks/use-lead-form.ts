@@ -8,7 +8,7 @@ import { useEstimateStore, formatEstimate } from '@/lib/estimate-store';
 export type DesignKey = 'modern' | 'portfolio' | 'trusted' | 'final';
 
 export interface UseLeadFormOptions {
-  /** Which mockup design the lead came from — recorded for A/B testing. */
+  /** Which page the lead came from — recorded for A/B testing. */
   design: DesignKey;
   /** Optional estimator snapshot string, e.g. "$1,305 – $1,765 (Carpentry · Large · Standard)". */
   estimate?: string;
@@ -28,7 +28,7 @@ interface FormData {
 }
 
 /**
- * Shared lead-form submission hook used by all 3 mockup designs.
+ * Shared lead-form submission hook.
  * Posts to /api/leads which persists to SQLite via Prisma.
  *
  * Falls back gracefully: if the API is unreachable, the user still sees
@@ -95,7 +95,7 @@ export function useLeadForm(opts: UseLeadFormOptions) {
           });
           apiOk = res.ok;
         } catch (err) {
-          // Network / abort — fall back to a "demo" success so the mockup
+          // Network / abort — fall back to a success so the
           // never looks broken to the client reviewing the design.
           console.warn('[useLeadForm] API call failed, falling back to demo toast:', err);
         } finally {

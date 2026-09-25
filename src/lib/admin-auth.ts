@@ -6,13 +6,13 @@ import { createHmac, timingSafeEqual } from 'crypto';
  *
  * Approach:
  * - A single shared password stored in ADMIN_PASSWORD env var (default
- *   "RR-admin-2026" for the mockup — change before going live).
+ *   "RR-admin-2026" for the site — change before going live).
  * - On POST /api/admin/auth/login with the right password, we set an
  *   HttpOnly cookie `rr_admin` containing an HMAC of the password.
  * - verifyAdminAuth checks that cookie against the expected HMAC.
  *
  * This is intentionally simple (no users table, no sessions DB) — it's a
- * mockup admin gate, not a multi-user auth system. For production you'd
+ * simple admin gate, not a multi-user auth system. For production you'd
  * swap this for NextAuth.js credentials provider.
  */
 

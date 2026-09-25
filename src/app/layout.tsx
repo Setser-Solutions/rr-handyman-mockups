@@ -57,8 +57,8 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
-    apple: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
+    icon: "/favicon.ico",
+    apple: "/favicon.ico",
   },
   openGraph: {
     title: `${BUSINESS.brand} — ${BUSINESS.primaryCity} Handyman`,
@@ -100,7 +100,7 @@ function buildJsonLd() {
     "@id": `${siteUrl}/#business`,
     name: BUSINESS.brand,
     image: `${siteUrl}/handyman-photos/img_013.jpg`,
-    logo: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
+    logo: "/favicon.ico",
     url: siteUrl,
     telephone: BUSINESS.phone,
     email: BUSINESS.email,

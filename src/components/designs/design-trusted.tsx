@@ -1233,7 +1233,7 @@ function Footer() {
 
         <div className="mt-10 flex flex-col items-center justify-between gap-2 border-t border-stone-800 pt-6 text-xs text-stone-500 sm:flex-row">
           <p>© 2024 {BUSINESS.brand}. All rights reserved.</p>
-          <p>Website mockup — sample design</p>
+          <p></p>
         </div>
       </div>
     </footer>
