@@ -641,10 +641,6 @@ function CaseStudySpotlight() {
             className="aspect-[4/3] w-full object-cover"
             loading="lazy"
           />
-          <Badge className="absolute left-4 top-4 gap-1.5 bg-yellow-400 px-3 py-1.5 text-xs text-slate-900 font-bold shadow-lg">
-            <Camera className="size-3.5" />
-            Before / After
-          </Badge>
         </motion.div>
 
         <motion.div
