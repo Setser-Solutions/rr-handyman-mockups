@@ -106,7 +106,7 @@ const stagger: Variants = {
 
 const fadeIn: Variants = {
   hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { duration: 0.4, ease: 'easeOut' } },
+  show: { opacity: 1, transition: { duration: 0.4, ease: 'easeOut' } },
 };
 
 function Reveal({
@@ -793,7 +793,7 @@ function ProjectGallery() {
             variants={stagger}
             initial="hidden"
             animate="show"
-            className="mt-10 columns-1 gap-4 sm:columns-2 lg:columns-3 [&>*]:mb-4"
+            className="mt-10 grid grid-cols-2 gap-4 lg:grid-cols-3"
           >
             {sources.map((src) => {
               const caption = captionFor(src);
@@ -806,13 +806,13 @@ function ProjectGallery() {
                   variants={fadeIn}
                   type="button"
                   onClick={() => setLightboxSrc(src)}
-                  className="group relative block w-full break-inside-avoid overflow-hidden rounded-xl border border-stone-300 bg-stone-200 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+                  className="group relative block aspect-[4/3] overflow-hidden rounded-xl border border-stone-300 bg-stone-200 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
                   aria-label={`Open photo: ${caption.title}`}
                 >
                   <img
                     src={src}
                     alt={caption.title}
-                    className="block w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                    className="size-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
                     loading="lazy"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-900/85 via-slate-900/20 to-transparent" />
